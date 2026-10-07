@@ -571,15 +571,43 @@
 .bridge-ignition ~ .chapter .chapter-copy { animation-duration:1.65s; }
 @media(prefers-reduced-motion:reduce) { .bridge-ignition::before {display:none} }
 
-/* Offered petals reuse the ambient shape/material; only their flight differs. */
-.darbar-petals .offered-petals {position:absolute;inset:0;--offer-origin-x:79%;--offer-origin-y:53%;--offer-travel-x:-29vw;--offer-travel-y:19vh}
-.darbar-petals .offered-petals i {left:var(--offer-origin-x);top:var(--offer-origin-y);width:11px;height:15px;animation:offering-to-altar 1.85s cubic-bezier(.22,.61,.36,1) both}
-@keyframes offering-to-altar {
-  0% {opacity:0;transform:translate3d(0,0,0) rotate(0) scale(.6)}
-  12% {opacity:.95}
-  52% {opacity:.9;transform:translate3d(calc(var(--offer-travel-x) * .65 + var(--offer-spread)),calc(var(--offer-travel-y) - 8vh),0) rotate(var(--offer-turn)) scale(1)}
-  80% {opacity:.8;transform:translate3d(calc(var(--offer-travel-x) + var(--offer-spread)),var(--offer-travel-y),0) rotate(var(--offer-turn)) scale(.7)}
-  100% {opacity:0;transform:translate3d(calc(var(--offer-travel-x) + var(--offer-spread)),calc(var(--offer-travel-y) + 1vh),0) rotate(var(--offer-turn)) scale(.4)}
+/* Single devotional marigold offering: one flower travels a soft arc from the
+   button to the altar. Flight keyframes are WAAPI-computed (see
+   marigold-offering.tsx); only the material lives here. */
+.marigold-offering {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 30;
 }
-@media(max-width:700px){.darbar-petals .offered-petals{--offer-origin-x:44%;--offer-origin-y:78%;--offer-travel-x:6vw;--offer-travel-y:-9vh}}
-@media(prefers-reduced-motion:reduce){.darbar-petals .offered-petals i{left:50%;top:70%;animation:offering-still 1.5s ease-out both} @keyframes offering-still{0%,100%{opacity:0}20%,70%{opacity:.8}}}
+.marigold-flight { position: absolute; inset: 0; }
+.marigold-flight > * { position: absolute; opacity: 0; will-change: transform, opacity; }
+.marigold-bloom {
+  width: clamp(22px, 5.5vw, 30px);
+  height: clamp(22px, 5.5vw, 30px);
+  border-radius: 54% 46% 58% 42% / 48% 55% 45% 52%;
+  background:
+    radial-gradient(circle at 36% 32%, #ffdf9e 0 8%, transparent 26%),
+    radial-gradient(circle at 62% 60%, #d97a1e 0 14%, transparent 34%),
+    repeating-radial-gradient(circle at 50% 46%, #f2a03c 0 2.5px, #d97f21 2.5px 4.5px);
+  box-shadow:
+    inset 0 -2px 5px #8a4a10aa,
+    inset 0 2px 3px #ffe2a755,
+    0 2px 8px #00000040;
+}
+.marigold-glow {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffd98c66 0%, #e9b55c22 45%, transparent 70%);
+}
+.marigold-drift {
+  width: 9px;
+  height: 12px;
+  border-radius: 62% 38% 60% 40% / 72% 72% 28% 28%;
+  background: linear-gradient(135deg, #f0a04b, #b85c14);
+}
+/* Subtle warm press feedback on the offer button itself. */
+.offer-flower-button:active {
+  box-shadow: 0 0 16px #e9b55c55, 0 5px 20px #0003;
+}

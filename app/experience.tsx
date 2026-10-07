@@ -32,6 +32,7 @@ import {
 import { EventContent, eventDate, isPlaceholder } from "@/lib/content";
 import Deck from "./deck";
 import DarbarPetals from "./darbar-petals";
+import MarigoldOffering from "./marigold-offering";
 import BalloonVeil from "./balloon-veil";
 import { resolveDeck } from "@/lib/deck-content";
 import { useSound } from "./audio";
@@ -703,7 +704,8 @@ export default function Experience({
                 )}
                 {chapterStage === "darbar" && (
                   <>
-                    <DarbarPetals boosted={petalSurge} offering={offeringCue} />
+                    <DarbarPetals boosted={petalSurge} />
+                    <MarigoldOffering cue={offeringCue} />
                     <div className="darbar-title">
                       <p className="eyebrow">IN THE PRESENCE OF THE DIVINE</p>
                       <h1
@@ -725,12 +727,12 @@ export default function Experience({
                     <div className="darbar-actions">
                       {content.features.flowers && (
                         <button
-                          className="ritual-button"
+                          className="ritual-button offer-flower-button"
                           onClick={() => {
                             setNotice("Your flower is offered with love.");
-                            // Boost the shared red petal emitter, then let it
-                            // ease back to baseline (CSS fades the surge layer
-                            // out over ~2s — no snap back).
+                            // The single marigold flight (MarigoldOffering) is
+                            // the main gesture; this boost only gently raises
+                            // ambient petal density for ~2s, then eases back.
                             setPetalSurge(true);
                             setOfferingCue(n=>n+1);
                             if (surgeTimer.current)
