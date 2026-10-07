@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
+import { createBalloon } from "./balloon-model";
 type Props = {
   mode: "diya" | "darbar" | "birthday";
   lit: boolean;
@@ -9,6 +10,8 @@ type Props = {
   travelling?: boolean;
   ambientOnly?: boolean;
   reignite?: number;
+  finale?: boolean;
+  speed?: number;
   onBellTap?: () => void;
 };
 export default function Temple({
@@ -19,6 +22,8 @@ export default function Temple({
   travelling = false,
   ambientOnly = false,
   reignite = 0,
+  finale = false,
+  speed = 1,
   onBellTap,
 }: Props) {
   const host = useRef<HTMLDivElement>(null),
@@ -232,6 +237,7 @@ export default function Temple({
       balloons: THREE.Group[] = [];
     const balloonBase: {
       x: number;
+      y: number;
       z: number;
       sway: number;
       phase: number;
@@ -417,15 +423,11 @@ export default function Temple({
       }
     }
     if (mode === "birthday") {
-      // Warm, premium palette — bronze, gold, wine, rose, burgundy,
-      // champagne, muted red — no carnival rainbow.
-      const palette = [
-        0xa8794c, 0xd9b36a, 0x7a3b45, 0xc4918a, 0x5d2a33, 0xe6d5b5,
-        0xa5524a,
-      ];
       for (let i = 0; i < 10; i++) {
-        const group = new THREE.Group();
+        const group = createBalloon(i, low);
+        group.traverse(o => { if (o instanceof THREE.Mesh) meshes.push(o); });
         const base = {
+          y: -5.4,
           x: (i - 4.5) * 0.85 + (((i * 0.37) % 1) - 0.5) * 1.4,
           z: -(i % 2) * 1.4 + ((i * 0.37) % 1) * 0.8,
           sway: 0.12 + ((i * 0.13) % 0.12),
@@ -436,66 +438,11 @@ export default function Temple({
           // Full rise in ~14–23s depending on size/depth.
           speed: 1 / (14 + ((i * 0.29) % 1) * 9),
         };
-        group.position.set(base.x, -5.4, base.z);
+        group.position.set(base.x, -5.4 + base.rise * 12, base.z);
         scene.add(group);
         balloons.push(group);
         balloonBase.push(base);
-        const geometry = new THREE.SphereGeometry(0.55, low ? 20 : 32, 24),
-          p = geometry.attributes.position;
-        for (let j = 0; j < p.count; j++) {
-          let y = p.getY(j);
-          if (y < -0.18) {
-            const n = 1 - (-y - 0.18) * 0.6;
-            p.setX(j, p.getX(j) * n);
-            p.setZ(j, p.getZ(j) * n);
-          }
-          p.setY(j, y * 1.08);
-        }
-        geometry.computeVertexNormals();
-        const material = new THREE.ShaderMaterial({
-          transparent: true,
-          depthWrite: false,
-          uniforms: {
-            color: {
-              value: new THREE.Color(palette[i % palette.length]),
-            },
-          },
-          vertexShader: `varying vec3 n,v; void main(){vec4 p=modelViewMatrix*vec4(position,1.); n=normalize(normalMatrix*normal);v=normalize(-p.xyz);gl_Position=projectionMatrix*p;}`,
-          fragmentShader: `uniform vec3 color;varying vec3 n,v;void main(){vec3 N=normalize(n);float rim=pow(1.-abs(dot(N,normalize(v))),2.);float shine=pow(max(0.,dot(N,normalize(vec3(-.5,.7,1.)))),32.);float shine2=pow(max(0.,dot(N,normalize(vec3(.7,.15,1.)))),60.);gl_FragColor=vec4(color*(.85+rim*.65)+vec3(1.,.94,.82)*shine*.85+shine2*.25,.34+rim*.42+shine*.17);}`,
-        });
-        mesh(geometry, material, 0, 0, 0, group);
-        const latex = new THREE.MeshStandardMaterial({
-          color: palette[i % palette.length],
-          roughness: 0.32,
-          metalness: 0.2,
-        });
-        mesh(
-          new THREE.CylinderGeometry(0.023, 0.025, 0.07, 8),
-          latex,
-          0,
-          -0.595,
-          0,
-          group,
-        );
-        mesh(new THREE.ConeGeometry(0.05, 0.08, 8), latex, 0, -0.655, 0, group);
-        const curve = new THREE.CatmullRomCurve3([
-          new THREE.Vector3(0, -0.68, 0),
-          new THREE.Vector3(0.11, -1.12, 0.03),
-          new THREE.Vector3(-0.12, -1.57, 0),
-          new THREE.Vector3(0.06, -2.1, 0.04),
-        ]);
-        mesh(
-          new THREE.TubeGeometry(curve, 32, 0.008, 5, false),
-          new THREE.MeshBasicMaterial({
-            color: 0xd5b17d,
-            transparent: true,
-            opacity: 0.6,
-          }),
-          0,
-          0,
-          0,
-          group,
-        );
+
       }
     }
     const count = low ? 35 : 90,
@@ -518,9 +465,9 @@ export default function Temple({
     scene.add(dust);
     let seenBell = bellPulse,
       seenReign = reignite,
-      exposeAt = 0,
+      exposeAt = finale && !reduced ? performance.now() + 600 * speed : 0,
       bellTime = -10000,
-      ignition = lit ? performance.now() - 3000 : 0;
+      ignition = exposeAt ? exposeAt + 850 * speed : lit ? performance.now() - 3000 : 0;
     let drag = false,
       lastX = 0,
       lastInput = 0,
@@ -702,7 +649,7 @@ export default function Temple({
       );
       camera.lookAt(0, mode === "diya" ? 0 : 0.8, 0);
       if (current.current.lit && !ignition) ignition = now;
-      const age = ignition ? (now - ignition) / 1000 : 0;
+      const age = ignition ? Math.max(0, (now - ignition) / (1000 * speed)) : 0;
       const catchLight =
         mode !== "diya"
           ? 1
@@ -734,11 +681,12 @@ export default function Temple({
         ambient.intensity = 0.38 + catchLight * 0.32;
         if (aura)
           (aura.material as THREE.ShaderMaterial).uniforms.strength.value =
-            0.03 + Math.min(age * 0.17, 0.6);
+            0.03 + THREE.MathUtils.smoothstep(age, 0.6, 1.5) * 0.6;
         if (!reduced && exposeAt) {
           // Diya emerges from darkness: exposure blooms in, body settles to
           // full scale, while the flame sequence above stages after it.
-          const reveal = (now - exposeAt) / 1000;
+          const reveal = (now - exposeAt) / (1000 * speed);
+          renderer.domElement.style.opacity = String(THREE.MathUtils.smoothstep(reveal, 0, 0.6));
           renderer.toneMappingExposure =
             0.12 + THREE.MathUtils.smoothstep(reveal, 0.05, 1.0) * 1.08;
           lamps.forEach(
@@ -758,8 +706,8 @@ export default function Temple({
       // first, then the diya emerges, the flame catches, warm light spreads.
       if (current.current.reignite > seenReign) {
         seenReign = current.current.reignite;
-        ignition = 0;
-        exposeAt = now;
+        exposeAt = now + 600 * speed;
+        ignition = exposeAt + 850 * speed;
       }
       const bellAge = (now - bellTime) / 1000,
         reaction = Math.exp(-bellAge * 1.4);

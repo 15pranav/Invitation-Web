@@ -110,47 +110,6 @@
   inset: 0;
   overflow: hidden;
 }
-.balloon-veil i {
-  position: absolute;
-  bottom: -32%;
-  width: min(24vw, 150px);
-  aspect-ratio: 0.92;
-  border-radius: 50% 50% 46% 54% / 55% 55% 45% 45%;
-  background: var(--balloon-skin, radial-gradient(circle at 32% 28%, #f4e0c0, #a8794c 62%, #4a3c2b33));
-  box-shadow: inset -8px -14px 24px #00000030;
-  opacity: 0;
-  animation: veil-rise 1.4s cubic-bezier(0.45, 0.1, 0.35, 1) both;
-}
-.balloon-veil i::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  width: 1px;
-  height: 130px;
-  background: linear-gradient(#d5b17d88, transparent);
-}
-@keyframes veil-rise {
-  0% {
-    transform: translateY(12vh) scale(0.55);
-    opacity: 0;
-  }
-  40% {
-    opacity: 1;
-  }
-  50% {
-    transform: translateY(-8vh) scale(1.35);
-    opacity: 1;
-  }
-  78% {
-    transform: translateY(-42vh) scale(1.1);
-    opacity: 0.95;
-  }
-  100% {
-    transform: translateY(-125vh) scale(0.8);
-    opacity: 0;
-  }
-}
 /* Finale: warm light gathers where the diya will appear, then lingers
    softly as the closing text fades in above it. */
 .closing-glow {
@@ -362,3 +321,9 @@
     animation: none;
   }
 }
+
+.balloon-veil canvas { display: block; width: 100%; height: 100%; }
+.balloon-outgoing .chapter { opacity: 0 !important; transition: opacity .2s ease-out; }
+.finale-sequence { animation: final-blessing-in calc(.7s * var(--journey-speed,1)) ease-out calc(2.65s * var(--journey-speed,1)) both; }
+@keyframes final-blessing-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .finale-sequence { animation: none; } }

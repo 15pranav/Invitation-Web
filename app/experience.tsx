@@ -24,6 +24,7 @@ import {
 import { EventContent, eventDate, isPlaceholder } from "@/lib/content";
 import Deck from "./deck";
 import DarbarPetals from "./darbar-petals";
+import BalloonVeil from "./balloon-veil";
 import { resolveDeck } from "@/lib/deck-content";
 import { useSound } from "./audio";
 import SceneScroll from "./scene-scroll";
@@ -38,14 +39,6 @@ const chapters = [
   { id: "memories", label: "Little moments" },
   { id: "venue", label: "Come celebrate" },
   { id: "finale", label: "With love & blessings" },
-];
-const balloonSkins = [
-  "radial-gradient(circle at 32% 28%, #f4e0c0, #a8794c 62%, #4a3c2b33)",
-  "radial-gradient(circle at 32% 28%, #f7e8c8, #d9b36a 62%, #6b523244)",
-  "radial-gradient(circle at 32% 28%, #eec3bd, #7a3b45 62%, #3a1c2244)",
-  "radial-gradient(circle at 32% 28%, #f6ddd6, #c4918a 62%, #5d3a3644)",
-  "radial-gradient(circle at 32% 28%, #edd9c4, #5d2a33 62%, #2c141844)",
-  "radial-gradient(circle at 32% 28%, #fbf3df, #e6d5b5 62%, #7d6c4f44)",
 ];
 function Countdown({ date }: { date: string }) {
   const [remaining, setRemaining] = useState<number | null>(null);
@@ -222,11 +215,7 @@ export default function Experience({
     // the scene swaps behind them at peak coverage, then they fly on upward.
     if (stage === "birthday" && id === "memories" && !immediate && !reduced) {
       setBridge("balloons");
-      transitionTimer.current = setTimeout(
-        () => setStage("memories"),
-        700 * speed,
-      );
-      bridgeTimer.current = setTimeout(() => setBridge(null), 1700 * speed);
+      pendingChapter.current = "memories";
       return;
     }
     // Balloon world → finale: balloons exit up and out, the background
@@ -235,11 +224,7 @@ export default function Experience({
     if (id === "finale" && birthdayWorld && !immediate && !reduced) {
       setBridge("closing");
       setFinaleCue((n) => n + 1);
-      transitionTimer.current = setTimeout(
-        () => setStage("finale"),
-        800 * speed,
-      );
-      bridgeTimer.current = setTimeout(() => setBridge(null), 2900 * speed);
+      pendingChapter.current = "finale";
       return;
     }
     pendingChapter.current = null;
@@ -338,7 +323,8 @@ export default function Experience({
             (birthdayWorld ? "birthday" : "temple") +
             " stage-" +
             stage +
-            (lit && stage === "opening" ? " is-igniting" : "")
+            (lit && stage === "opening" ? " is-igniting" : "") +
+            ((bridge === "balloons" && stage === "birthday") || (bridge === "closing" && stage !== "finale") ? " balloon-outgoing" : "")
           }
         >
           <div className="grain" />
@@ -423,6 +409,8 @@ export default function Experience({
                     }
                     reduced={!!reduced}
                     reignite={finaleCue}
+                    finale={stage === "finale"}
+                    speed={journeySpeed}
                     onBellTap={ringBell}
                   />
                 </Suspense>
@@ -441,23 +429,14 @@ export default function Experience({
                 <div className="ganesh-cloud-veil"><i /><i /><i /><i /></div>
               ) : <div className="bridge-core" />}
               {(bridge === "balloons" || bridge === "closing") && (
-                <div className="balloon-veil">
-                  {Array.from({ length: 7 }, (_, i) => (
-                    <i
-                      key={i}
-                      style={
-                        {
-                          "--balloon-skin": balloonSkins[i % balloonSkins.length],
-                          left: `${5 + i * 14}%`,
-                          animationDelay: `${i * 0.08}s`,
-                          animationDuration: `${1.5 + (i % 3) * 0.28}s`,
-                        } as React.CSSProperties
-                      }
-                    />
-                  ))}
-                </div>
+                <BalloonVeil speed={journeySpeed}
+                  onCovered={() => {
+                    const target = pendingChapter.current;
+                    if (target) { setStage(target); pendingChapter.current = null; }
+                  }}
+                  onComplete={() => setBridge(null)}
+                />
               )}
-              {bridge === "closing" && <div className="closing-glow" />}
             </div>
           )}
           {bridge === "blessing" && stage === "darbar" && !reduced && (
@@ -491,7 +470,7 @@ export default function Experience({
               exit={{ opacity: 0, y: reduced ? 0 : -12 }}
               transition={{
                 duration: bridge ? 0.1 : 0.55,
-                delay: bridge === "closing" ? 1.35 : 0,
+                delay: 0,
               }}
               onAnimationComplete={() =>
                 stageTitle.current?.focus({ preventScroll: true })
@@ -949,7 +928,7 @@ export default function Experience({
                 </div>
               )}
               {stage === "finale" && (
-                <div className="finale-chapter">
+                <div className="finale-chapter finale-sequence">
                   <p className="eyebrow">WITH FOLDED HANDS & FULL HEARTS</p>
                   <h1 ref={stageTitle} tabIndex={-1}>
                     <span className="hindi">आप सपरिवार आमंत्रित हैं</span>
