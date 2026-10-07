@@ -151,6 +151,12 @@ export default function SceneScroll({
       touching = false;
       schedule();
     };
+    // Focusing a control inside the pinned chapter must not scroll the rail.
+    const focus = (e:FocusEvent) => {
+      if(gliding || touching || !(e.target instanceof Element) || !e.target.closest('button,a,input,select,textarea')) return;
+      syncUntil.current=performance.now()+100;
+      el.scrollTop=Math.max(0,ids.indexOf(requested.current))*height;
+    };
     const key = (e: KeyboardEvent) => {
       if (
         !active ||
@@ -202,6 +208,7 @@ export default function SceneScroll({
     el.addEventListener("touchend", up, { passive: true });
     el.addEventListener("touchcancel", up, { passive: true });
     el.addEventListener("keydown", key);
+    el.addEventListener("focusin",focus);
     return () => {
       stop();
       observer.disconnect();
@@ -211,6 +218,7 @@ export default function SceneScroll({
       el.removeEventListener("touchend", up);
       el.removeEventListener("touchcancel", up);
       el.removeEventListener("keydown", key);
+      el.removeEventListener("focusin",focus);
     };
   }, [idsKey, active, blocked]);
   useEffect(() => {

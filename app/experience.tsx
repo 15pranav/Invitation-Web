@@ -97,6 +97,7 @@ export default function Experience({
     [deckLeaving, setDeckLeaving] = useState(false),
     [bridge, setBridge] = useState<
       | "ignition"
+      | "darbar"
       | "birthday"
       | "cards"
       | "blessing"
@@ -106,6 +107,7 @@ export default function Experience({
     >(null);
   const [petalSurge, setPetalSurge] = useState(false);
   const main = useRef<HTMLElement>(null);
+  const atmosphereFrame = useRef(0);
   const [scrollPair, setScrollPair] = useState<[string, string] | null>(null);
   const [scrollArrived, setScrollArrived] = useState(false);
   const scrollProgress = useMotionValue(0);
@@ -121,6 +123,11 @@ export default function Experience({
       const p = pair.progress,
         clamp = (v: number) => Math.max(0, Math.min(1, v));
       scrollProgress.set(p);
+      const devotional = pair.from === "ganesh" && pair.to === "darbar";
+      const ramp = (a:number,b:number) => { const q=clamp((p-a)/(b-a)); return q*q*(3-2*q); };
+      main.current?.style.setProperty("--devotional-veil", String(ramp(.12,.48)*(1-ramp(.68,1))));
+      main.current?.style.setProperty("--devotional-warmth", String(ramp(.2,.7)));
+      main.current?.style.setProperty("--devotional-glow", String(ramp(0,.25)*(1-ramp(.7,1))));
       const sceneOpacity = (id: string) =>
         ["deck", "bhajans"].includes(id) ? 0.13 : 1;
       main.current?.style.setProperty(
@@ -130,15 +137,15 @@ export default function Experience({
       main.current?.style.setProperty("--scene-progress", String(p));
       main.current?.style.setProperty(
         "--scene-blend",
-        String(balloon ? clamp((p - 0.4) / 0.17) : p),
+        String(devotional ? ramp(.43,.9) : balloon ? clamp((p - 0.4) / 0.17) : p),
       );
       main.current?.style.setProperty(
         "--content-out",
-        String(balloon ? 1 - clamp(p / 0.14) : 1 - p),
+        String(devotional ? 1-ramp(.3,.72) : balloon ? 1 - clamp(p / 0.14) : 1 - p),
       );
       main.current?.style.setProperty(
         "--content-in",
-        String(balloon ? clamp((p - 0.63) / 0.25) : p),
+        String(devotional ? ramp(.65,.96) : balloon ? clamp((p - 0.63) / 0.25) : p),
       );
       setScrollPair((old) =>
         old?.[0] === pair.from && old[1] === pair.to
@@ -233,6 +240,7 @@ export default function Experience({
       if (transitionTimer.current) clearTimeout(transitionTimer.current);
       if (bridgeTimer.current) clearTimeout(bridgeTimer.current);
       if (surgeTimer.current) clearTimeout(surgeTimer.current);
+      cancelAnimationFrame(atmosphereFrame.current);
     },
     [],
   );
@@ -242,6 +250,7 @@ export default function Experience({
     return () => clearTimeout(t);
   }, [notice]);
   function clearJourneyTimers() {
+    cancelAnimationFrame(atmosphereFrame.current);
     if (transitionTimer.current) clearTimeout(transitionTimer.current);
     if (bridgeTimer.current) clearTimeout(bridgeTimer.current);
   }
@@ -265,6 +274,18 @@ export default function Experience({
     if (bridge || deckLeaving) immediate = true;
     clearJourneyTimers();
     setSelectedSong(null);
+    if (stage === "ganesh" && id === "darbar" && !fromScroll && !reduced) {
+      setBridge("darbar");
+      const start=performance.now();
+      const tick=(now:number)=>{
+        const progress=Math.min(1,(now-start)/(2100*speed));
+        updateScroll({from:"ganesh",to:"darbar",progress});
+        if(progress<1) atmosphereFrame.current=requestAnimationFrame(tick);
+        else { setStage("darbar"); setScrollPair(null); setBridge(null); }
+      };
+      atmosphereFrame.current=requestAnimationFrame(tick);
+      return;
+    }
     if (stage === "deck" && id === "bhajans" && !immediate && !reduced) {
       pendingChapter.current = id;
       setDeckLeaving(true);
@@ -521,7 +542,10 @@ export default function Experience({
               />
             </div>
           )}
-          {bridge && !reduced && (
+          {scrollPair?.[0] === "ganesh" && scrollPair[1] === "darbar" && !reduced && (
+            <div className="devotional-atmosphere" aria-hidden="true"><div className="devotional-gold"/><div className="devotional-red"/><div className="devotional-cloud"/>{Array.from({length:18},(_,i)=><i key={i} style={{left:`${12+(i*37)%78}%`,top:`${15+(i*23)%70}%`}} />)}</div>
+          )}
+          {bridge && bridge !== "darbar" && !reduced && (
             <div
               key={bridge}
               className={`light-bridge bridge-${bridge}`}

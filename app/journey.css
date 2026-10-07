@@ -231,3 +231,12 @@
     transition: none;
   }
 }
+
+/* Ganesh to Maa: progress controls atmosphere as well as scene overlap. */
+.devotional-atmosphere {position:absolute;inset:0;z-index:45;pointer-events:none;overflow:hidden}
+.devotional-atmosphere > div {position:absolute;inset:-10%}
+.devotional-gold {background:radial-gradient(ellipse at 50% 44%,#f3c46f88,#b9793022 48%,transparent 74%);opacity:var(--devotional-glow,0);transform:scale(calc(.85 + var(--scene-progress,0) * .35))}
+.devotional-red {background:radial-gradient(ellipse at 50% 48%,#e99c3b99,#861e3299 45%,#280c1866 74%);opacity:calc(var(--devotional-veil,0) * var(--devotional-warmth,0))}
+.devotional-cloud {background:radial-gradient(ellipse at 20% 45%,#c79b6588,transparent 44%),radial-gradient(ellipse at 85% 60%,#8d434288,transparent 50%);opacity:var(--devotional-veil,0);transform:translate3d(calc((var(--scene-progress,0) - .5) * 12%),0,0) scale(1.15)}
+.devotional-atmosphere > i {position:absolute;width:2px;height:2px;border-radius:50%;background:#ffe0a1;opacity:var(--devotional-veil,0);transform:translate3d(calc((var(--scene-progress,0) - .5) * -32px),calc(var(--scene-progress,0) * -55px),0) scale(calc(.6 + var(--devotional-glow,0)))}
+@media(prefers-reduced-motion:reduce){.devotional-atmosphere{display:none}}
