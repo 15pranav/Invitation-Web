@@ -118,13 +118,13 @@ export default function Deck({
     later(() => done.current?.(), 2800);
   }, [leaving, reduced]);
   function fanOut() {
-    if (inTransition) return;
+    if (inTransition || busy.current) return;
     setFlip(false);
     setPhase("fan");
     setSpark((n) => n + 1);
   }
   function gather() {
-    if (inTransition) return;
+    if (inTransition || busy.current) return;
     setFlip(false);
     setPhase("stacked");
     setSpark((n) => n + 1);
@@ -134,9 +134,7 @@ export default function Deck({
     setPhase("fan");
     setFlip(false);
     busy.current = true;
-    const outgoing =
-      direction > 0 ? selected : idsInOrder[idsInOrder.length - 1];
-    setDeparting({ id: outgoing, direction: direction > 0 ? -1 : 1 });
+    setDeparting({ id: selected, direction: direction > 0 ? -1 : 1 });
     setSpark((n) => n + 1);
     setOrder((o) =>
       direction > 0
@@ -217,7 +215,7 @@ export default function Deck({
           const Icon = icons[item.icon || item.kind];
           const spread = fan;
           const visible = spread ? Math.abs(offset) <= 2 : rank < 10;
-          let pose: Record<string, number | number[]> = {
+          let pose: Record<string, number | (number | null)[]> = {
             x: spread ? offset * 93 : rank * 3.2,
             y: spread ? Math.abs(offset) * 22 : rank * 2.3,
             rotate: spread
@@ -225,7 +223,10 @@ export default function Deck({
               : (rank % 2 ? -0.6 : 0.6) * Math.min(rank, 4),
             rotateX: 0,
             rotateY: 0,
-            z: active && flip ? 95 : -rank * 3,
+            // Keep all interactive cards in front of the deck's hit-test plane.
+            // A shared 3D context now resolves overlap continuously, in both
+            // directions, without a timer-driven stacking-order change.
+            z: active && flip ? 95 : 48 - Math.min(spread ? Math.abs(offset) : rank, 12) * 3,
             scale: active ? (flip ? 1.035 : 1) : spread ? 0.92 : 1,
             opacity: visible ? 1 : 0,
           };
@@ -277,18 +278,12 @@ export default function Deck({
           if (departing?.id === item.id) {
             pose = {
               ...pose,
-              x: [
-                0,
-                departing.direction * 215,
-                departing.direction * 125,
-                pose.x as number,
-              ],
-              y: [-12, -35, 38, pose.y as number],
-              z: [80, 110, -120, -rank * 3],
+              x: [null, departing.direction * 58, pose.x as number],
+              y: [null, 8, pose.y as number],
+              z: [null, 43, pose.z as number],
               rotate: [
                 0,
-                departing.direction * 23,
-                departing.direction * 9,
+                departing.direction * 7,
                 pose.rotate as number,
               ],
             };
@@ -305,7 +300,6 @@ export default function Deck({
               key={item.id}
               className="card-carrier"
               style={{
-                zIndex: departing?.id === item.id ? 30 : 20 - rank,
                 pointerEvents: visible && !inTransition ? "auto" : "none",
               }}
               initial={
@@ -320,13 +314,15 @@ export default function Deck({
                     }
               }
               animate={
-                reduced ? { ...pose, z: 0, rotateX: 0, rotateY: 0 } : pose
+                reduced ? { ...pose, rotateX: 0, rotateY: 0 } : pose
               }
               transition={
                 reduced
                   ? { duration: 0 }
                   : duration
                     ? { duration, delay, ease: [0.22, 0.65, 0.25, 1] }
+                    : departing
+                      ? { duration: 0.6, ease: [0.22, 0.65, 0.25, 1] }
                     : {
                         type: "spring",
                         stiffness: 155,
@@ -400,6 +396,7 @@ export default function Deck({
                     </span>
                     <div className="card-art">
                       <img
+                        draggable={false}
                         src={item.artwork || "/art/ceremonial-engraving.webp"}
                         alt={
                           item.artwork

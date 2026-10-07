@@ -11,18 +11,15 @@
   /* Matches the drag gesture's own touch-action on the active card. Without
      this, taps on side cards are claimed by the page's scroll intent and
      cancelled (pointercancel) before onPointerUp can select the card. */
-  touch-action: none;
+  touch-action: none !important;
   -webkit-user-select: none;
   user-select: none;
 }
-/* The deck container must stay a FLATTENED 3D context. With
-   `transform-style: preserve-3d` here, Chromium fails to hit-test any card
-   carrier whose transform includes a negative translateZ (every fanned side
-   card): the cards paint, but elementFromPoint/pointer events skip them, so
-   side-card taps fall through to the deck. Each card still gets its depth
-   cue from `.deck { perspective }` and `.ceremony-card { perspective }`. */
+/* Interactive poses use positive depth, so Chromium can hit-test side cards
+   while the shared 3D context handles continuous physical occlusion. Never
+   assign a departing carrier a temporary z-index: that flattens the reorder. */
 .physical-deck .deck {
-  transform-style: flat;
+  transform-style: preserve-3d;
 }
 .phase-stacked .card-inner {
   animation: stack-breath 7s ease-in-out infinite;
