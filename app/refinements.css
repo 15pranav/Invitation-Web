@@ -545,3 +545,17 @@
 @media (max-width: 700px) {
   .ganesh-layout { overflow-y: auto; overflow-x: hidden; scrollbar-width: none; }
 }
+
+.darbar-petals .petal-lane { position: absolute; inset: 0; pointer-events: none; }
+.darbar-petals i { animation-name: darbar-petal-fall; }
+@keyframes darbar-petal-fall {
+  0% { opacity: 0; transform: translate3d(0,-3vh,0) rotate(0deg); }
+  12% { opacity: .6; }
+  85% { opacity: .4; }
+  100% { opacity: 0; transform: translate3d(var(--petal-drift),106vh,0) rotate(var(--petal-turn)); }
+}
+
+@media (max-width: 360px) {
+  .darbar-actions .ritual-button { padding: 8px 9px; gap: 7px; font-size: 16px; white-space: nowrap; }
+  .darbar-actions .ritual-button svg { width: 17px; height: 17px; }
+}

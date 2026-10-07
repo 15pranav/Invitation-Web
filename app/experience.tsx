@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { EventContent, eventDate, isPlaceholder } from "@/lib/content";
 import Deck from "./deck";
+import DarbarPetals from "./darbar-petals";
 import { resolveDeck } from "@/lib/deck-content";
 import { useSound } from "./audio";
 import SceneScroll from "./scene-scroll";
@@ -83,7 +84,6 @@ export default function Experience({
   const [stage, setStage] = useState("opening"),
     [lit, setLit] = useState(false),
     [menu, setMenu] = useState(false),
-    [offering, setOffering] = useState(0),
     [bellPulse, setBellPulse] = useState(0),
     [notice, setNotice] = useState(""),
     [rsvp, setRsvp] = useState(false),
@@ -411,7 +411,6 @@ export default function Experience({
                   <Temple
                     mode={visualMode}
                     lit={lit}
-                    offering={offering}
                     bellPulse={bellPulse}
                     travelling={
                       (bridge === "birthday" && !birthdayWorld) ||
@@ -575,43 +574,7 @@ export default function Experience({
               )}
               {stage === "darbar" && (
                 <>
-                  <div
-                    className={`darbar-petals${petalSurge ? " boosted" : ""}`}
-                    aria-hidden="true"
-                  >
-                    {/* Baseline red rose petals — continuous fall, denser than
-                        the Bhajan page's sparse gold drift. */}
-                    {Array.from({ length: 18 }, (_, i) => (
-                      <i
-                        key={"c" + i}
-                        style={
-                          {
-                            left: `${2 + ((i * 53) % 95)}%`,
-                            animationDelay: `${i * -1.1}s`,
-                            animationDuration: `${9 + (i % 5) * 2}s`,
-                            "--petal-scale": 0.85 + ((i * 0.31) % 0.7),
-                          } as React.CSSProperties
-                        }
-                      />
-                    ))}
-                    {/* Surge petals: hidden at rest; "Offer a flower" fades
-                        them in quickly and they ease back out over ~2s. */}
-                    <span className="surge">
-                      {Array.from({ length: 14 }, (_, i) => (
-                        <i
-                          key={"s" + i}
-                          style={
-                            {
-                              left: `${4 + ((i * 67) % 92)}%`,
-                              animationDelay: `${i * -0.8}s`,
-                              animationDuration: `${7 + (i % 4) * 1.8}s`,
-                              "--petal-scale": 0.9 + ((i * 0.27) % 0.6),
-                            } as React.CSSProperties
-                          }
-                        />
-                      ))}
-                    </span>
-                  </div>
+                  <DarbarPetals boosted={petalSurge} />
                   <div className="darbar-title">
                     <p className="eyebrow">IN THE PRESENCE OF THE DIVINE</p>
                     <h1 ref={stageTitle} tabIndex={-1} className="hindi">
@@ -631,7 +594,6 @@ export default function Experience({
                       <button
                         className="ritual-button"
                         onClick={() => {
-                          setOffering((n) => n + 1);
                           setNotice("Your flower is offered with love.");
                           // Boost the shared red petal emitter, then let it
                           // ease back to baseline (CSS fades the surge layer
@@ -641,7 +603,7 @@ export default function Experience({
                             clearTimeout(surgeTimer.current);
                           surgeTimer.current = setTimeout(
                             () => setPetalSurge(false),
-                            1400,
+                            300,
                           );
                         }}
                       >

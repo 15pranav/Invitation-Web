@@ -102,7 +102,7 @@
   background: radial-gradient(ellipse at 50% 32%, #3b2915, #100d08 70%);
 }
 .stage-darbar {
-  background: radial-gradient(ellipse at 50% 48%, #431316, #100607 77%);
+  background: radial-gradient(ellipse at 50% 48%, #6a2520 0%, #401219 36%, #1a080d 70%, #100607 100%);
 }
 .stage-deck {
   background: radial-gradient(ellipse at 50% 64%, #321a27, #100b11 75%);

@@ -4,7 +4,6 @@ import * as THREE from "three";
 type Props = {
   mode: "diya" | "darbar" | "birthday";
   lit: boolean;
-  offering?: number;
   bellPulse?: number;
   reduced?: boolean;
   travelling?: boolean;
@@ -15,7 +14,6 @@ type Props = {
 export default function Temple({
   mode,
   lit,
-  offering = 0,
   bellPulse = 0,
   reduced = false,
   travelling = false,
@@ -24,8 +22,8 @@ export default function Temple({
   onBellTap,
 }: Props) {
   const host = useRef<HTMLDivElement>(null),
-    current = useRef({ lit, offering, bellPulse, travelling, ambientOnly, reignite, onBellTap });
-  current.current = { lit, offering, bellPulse, travelling, ambientOnly, reignite, onBellTap };
+    current = useRef({ lit, bellPulse, travelling, ambientOnly, reignite, onBellTap });
+  current.current = { lit, bellPulse, travelling, ambientOnly, reignite, onBellTap };
   const [fallback, setFallback] = useState(false),
     [loading, setLoading] = useState(false);
   useEffect(() => {
@@ -141,12 +139,7 @@ export default function Temple({
       shaders.push(material);
       return mesh(new THREE.PlaneGeometry(size, size), material, x, y, z);
     }
-    const floatingPetals: {
-      mesh: THREE.Mesh;
-      base: THREE.Vector3;
-      offset: THREE.Vector2;
-      velocity: THREE.Vector2;
-    }[] = [];
+    const pillars: { group: THREE.Group; x: number; z: number; rear: boolean }[] = [];
     const lamps: THREE.Group[] = [];
     const lampHeat: number[] = [];
     const flames: {
@@ -252,8 +245,8 @@ export default function Temple({
       aura = glow(7, 0, 0.05, -0.4, 0.03);
     }
     if (mode === "darbar") {
-      aura = glow(9, 0, 1.1, -2.1, 1.4, true);
-      glow(5.4, 0, 1.7, -1.7, 0.95);
+      aura = glow(10, 0, 1.1, -2.1, 1.65, true);
+      glow(6.2, 0, 1.7, -1.7, 1.08);
       glow(3.1, 0, 1.9, -1.3, 0.34);
       const image = texture("/art/mata-relief.webp", () => {
         if (!disposed) setLoading(false);
@@ -313,20 +306,26 @@ export default function Temple({
           [3.05, 0.8, 6.5],
         ]) {
           const archmat = x > 3 ? dark : brass;
+          const pillar = new THREE.Group();
+          pillar.position.set(side * x, 0, z);
+          scene.add(pillar);
+          pillars.push({ group: pillar, x: side * x, z, rear: x < 3 });
           mesh(
             new THREE.CylinderGeometry(0.13, 0.2, h, 20),
             archmat,
-            side * x,
+            0,
             0.65,
-            z,
+            0,
+            pillar,
           );
           for (const yy of [-1.6, 2.8, 3.25])
             mesh(
               new THREE.CylinderGeometry(0.24, 0.27, 0.13, 24),
               rim,
-              side * x,
+              0,
               yy,
-              z,
+              0,
+              pillar,
             );
         }
         mesh(
@@ -399,35 +398,7 @@ export default function Temple({
         );
       }
       flowerTexture = texture("/art/offering-flower.webp");
-      const petalCount = low ? 5 : 9;
-      for (let i = 0; i < petalCount; i++) {
-        const base = new THREE.Vector3(
-          Math.sin(i * 2.4) * 2.6,
-          0.2 + (i % 4) * 0.6,
-          0.8 + (i % 3) * 0.6,
-        );
-        // Slight per-petal scale/opacity variation reads as natural depth
-        // without adding draw calls.
-        const depth = 0.78 + ((i * 0.37) % 1) * 0.45;
-        const petal = mesh(
-          new THREE.PlaneGeometry(0.14 * depth, 0.21 * depth),
-          new THREE.MeshBasicMaterial({
-            map: flowerTexture,
-            transparent: true,
-            opacity: 0.5 + depth * 0.24,
-            depthWrite: false,
-          }),
-          base.x,
-          base.y,
-          base.z,
-        );
-        floatingPetals.push({
-          mesh: petal,
-          base,
-          offset: new THREE.Vector2(),
-          velocity: new THREE.Vector2(),
-        });
-      }
+      // Fixed rose garland lies on the altar; all airborne petals live in DarbarPetals.
       for (let i = 0; i < 14; i++) {
         const a = (i / 13 - 0.5) * 2.3;
         const f = mesh(
@@ -545,16 +516,7 @@ export default function Temple({
     });
     const dust = new THREE.Points(pg, pm);
     scene.add(dust);
-    type Flower = {
-      mesh: THREE.Mesh;
-      born: number;
-      start: THREE.Vector3;
-      end: THREE.Vector3;
-      turn: number;
-    };
-    const offerings: Flower[] = [];
-    let seen = offering,
-      seenBell = bellPulse,
+    let seenBell = bellPulse,
       seenReign = reignite,
       exposeAt = 0,
       bellTime = -10000,
@@ -619,26 +581,13 @@ export default function Temple({
     const move = (e: PointerEvent) => {
       if (!reduced && mode === "darbar") {
         const r = el.getBoundingClientRect();
-        const px = ((e.clientX - r.left) / r.width) * 2 - 1,
-          py = 1 - ((e.clientY - r.top) / r.height) * 2;
+        const px = ((e.clientX - r.left) / r.width) * 2 - 1;
         if (!drag) {
           target = THREE.MathUtils.clamp(px * 0.012, -0.015, 0.015);
           lastInput = performance.now();
           // Gentle affordance: pointer cursor only while hovering the bell.
           el.style.cursor = pick(e, bells) >= 0 ? "pointer" : "grab";
         }
-        floatingPetals.forEach((p) => {
-          const screen = p.mesh.position.clone().project(camera);
-          if (Math.hypot(screen.x - px, screen.y - py) < 0.3)
-            p.velocity
-              .add(
-                new THREE.Vector2(
-                  (screen.x - px) * 0.008,
-                  (screen.y - py) * 0.008,
-                ),
-              )
-              .clampLength(0, 0.025);
-        });
       }
       if (heldBalloon >= 0) {
         const i = heldBalloon,
@@ -682,6 +631,11 @@ export default function Temple({
     el.addEventListener("pointerup", up);
     el.addEventListener("pointercancel", up);
     const resize = () => {
+      const narrow = window.innerWidth <= 700;
+      pillars.forEach(({ group, x, z, rear }) => {
+        group.position.set(narrow ? Math.sign(x) * (rear ? 2.08 : 2.35) : x, 0, narrow ? (rear ? -1.8 : 0.45) : z);
+        group.scale.set(narrow && rear ? 0.64 : 1, narrow && rear ? 0.92 : 1, narrow && rear ? 0.64 : 1);
+      });
       renderer.setSize(el.clientWidth, el.clientHeight);
       camera.aspect = el.clientWidth / el.clientHeight;
       camera.updateProjectionMatrix();
@@ -703,20 +657,6 @@ export default function Temple({
       lastFrame = now;
       const t = reduced ? 0 : now * 0.001;
       const travel = current.current.travelling && !reduced;
-      floatingPetals.forEach((p, i) => {
-        if (!reduced) {
-          p.velocity
-            .addScaledVector(p.offset, -0.018 * dt)
-            .multiplyScalar(Math.pow(0.92, dt));
-          p.offset.addScaledVector(p.velocity, dt);
-          p.mesh.position.set(
-            p.base.x + p.offset.x,
-            p.base.y + p.offset.y + Math.sin(t * 0.3 + i) * 0.07,
-            p.base.z,
-          );
-          p.mesh.rotation.z = Math.sin(t * 0.2 + i) * 0.15;
-        }
-      });
       if (mode === "darbar") {
         key.intensity += ((travel ? 43 : 35) - key.intensity) * 0.025;
         // During the blessing build-up the aura physically grows and the
@@ -879,62 +819,6 @@ export default function Temple({
           );
           b.rotation.z = Math.sin(t * 0.3 + i) * 0.035;
         });
-      }
-      if (current.current.offering > seen && flowerTexture) {
-        seen = current.current.offering;
-        if (offerings.length >= 8) {
-          const oldest = offerings.shift()!;
-          scene.remove(oldest.mesh);
-          oldest.mesh.geometry.dispose();
-          (oldest.mesh.material as THREE.Material).dispose();
-        }
-        const end = new THREE.Vector3(
-          Math.sin(seen * 2.4) * 1.12,
-          -1.44,
-          1.1 + Math.cos(seen * 1.7) * 0.25,
-        );
-        const f = mesh(
-          new THREE.PlaneGeometry(0.42, 0.42),
-          new THREE.MeshBasicMaterial({
-            map: flowerTexture,
-            transparent: true,
-            depthWrite: false,
-            side: THREE.DoubleSide,
-          }),
-          0,
-          -2.3,
-          3.1,
-        );
-        offerings.push({
-          mesh: f,
-          born: now,
-          start: new THREE.Vector3(Math.sin(seen) * 0.8, -2.3, 3.1),
-          end,
-          turn: seen * 0.7,
-        });
-      }
-      for (let i = offerings.length - 1; i >= 0; i--) {
-        const f = offerings[i],
-          age = (now - f.born) / 1000,
-          travel = reduced ? 0.1 : 1.4,
-          q = Math.min(1, age / travel),
-          ease = 1 - (1 - q) ** 2;
-        f.mesh.position.lerpVectors(f.start, f.end, ease);
-        f.mesh.position.y += Math.sin(q * Math.PI) * (reduced ? 0 : 1.6);
-        f.mesh.rotation.set(-Math.PI * 0.44 * ease, 0, f.turn + q * 0.45);
-        const fade = THREE.MathUtils.smoothstep(
-          age,
-          travel + 4.5,
-          travel + 5.6,
-        );
-        (f.mesh.material as THREE.MeshBasicMaterial).opacity = 1 - fade;
-        if (fade > 0) f.mesh.position.y += fade * 0.06;
-        if (age > travel + 5.6) {
-          scene.remove(f.mesh);
-          f.mesh.geometry.dispose();
-          (f.mesh.material as THREE.Material).dispose();
-          offerings.splice(i, 1);
-        }
       }
       if (mode === "darbar" && !reduced)
         renderer.toneMappingExposure =
