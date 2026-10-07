@@ -17,3 +17,26 @@ assert.equal(settleIndex(99, 2, 9), 8);
 console.log(
   "Scroll interval continuity, bidirectional settling, flick projection and boundaries passed.",
 );
+
+const { gestureTarget } = await import("../app/scene-progress.ts");
+const target = (px, v = 0, retreat = 0) =>
+  gestureTarget(3, 3 + px / 812, v, retreat, 9, 812);
+assert.equal(target(5, 0.8), 3, "tiny movement is ignored");
+assert.equal(target(30), 4, "light deliberate drag advances");
+assert.equal(target(-30), 2, "backward uses the same threshold");
+assert.equal(target(12, 0.4), 4, "short fast flick advances");
+assert.equal(target(12, 0.1), 3, "slow near-start release returns");
+assert.equal(target(81, -0.2, 162), 3, "clear reversal returns to origin");
+assert.equal(target(81, 0, 162), 3, "reversed then held returns to origin");
+assert.equal(target(3000, 4), 4, "one scene only");
+assert.equal(gestureTarget(1, 0.8, -1, 0, 9, 812), 1);
+assert.equal(gestureTarget(8, 8.4, 1, 0, 9, 812), 8);
+console.log(
+  "Light intent, fast flick, accidental motion, reversal and one-scene bounds passed.",
+);
+
+const {gestureInterval}=await import('../app/scene-progress.ts');
+assert.deepEqual(gestureInterval(4,3,9),{from:3,to:4,progress:1},'endpoint keeps incoming scene mounted');
+assert.deepEqual(gestureInterval(3.3,3,9),{from:3,to:4,progress:3.3-3});
+assert.deepEqual(gestureInterval(3.1,3,9),{from:3,to:4,progress:3.1-3});
+assert.deepEqual(gestureInterval(2.8,3,9),{from:2,to:3,progress:2.8-2});

@@ -13,3 +13,27 @@ export function settleIndex(page: number, velocity: number, count: number) {
     count - 1,
   );
 }
+
+// Pixel thresholds distinguish taps from intentional light scene gestures.
+export function gestureTarget(
+  anchor: number,
+  page: number,
+  velocityPx: number,
+  retreatPx: number,
+  count: number,
+  height: number,
+) {
+  const distance = (page - anchor) * height,
+    direction = Math.sign(distance);
+  const threshold = clamp(height * 0.035, 18, 32);
+  const reversed = retreatPx >= 18 && velocityPx * direction <= 0;
+  const intent =
+    Math.abs(distance) >= threshold ||
+    (Math.abs(distance) >= 8 && velocityPx * direction >= 0.25);
+  return clamp(anchor + (intent && !reversed ? direction : 0), 1, count - 1);
+}
+
+export function gestureInterval(page:number,anchor:number,count:number) {
+ const from=clamp(page<anchor?anchor-1:anchor,1,count-2);
+ return {from,to:from+1,progress:clamp(page-from,0,1)};
+}
