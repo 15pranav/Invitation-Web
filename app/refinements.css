@@ -133,15 +133,7 @@
   filter: blur(3px);
 }
 .ganesh-layout {
-  animation: blessing-reveal 1.8s cubic-bezier(0.18, 0.6, 0.3, 1) both;
-}
-@keyframes blessing-reveal {
-  from {
-    clip-path: circle(3% at 42% 65%);
-  }
-  to {
-    clip-path: circle(150% at 42% 65%);
-  }
+  isolation: isolate;
 }
 .ganesh-image {
   position: relative;
@@ -156,10 +148,10 @@
 }
 .ganesh-radiance {
   position: absolute;
-  inset: -12%;
+  inset: -16%;
   z-index: 0;
-  background: radial-gradient(ellipse, #d49a4033, transparent 65%);
-  animation: blessing-breathe 10s ease-in-out infinite reverse;
+  background: radial-gradient(ellipse at 50% 48%, #e5b55966, #c38c3633 38%, transparent 72%);
+  animation: ganesh-aura-breathe 7s ease-in-out infinite;
 }
 @keyframes blessing-breathe {
   0%,
@@ -339,11 +331,9 @@
   }
 }
 .ganesh-layout {
-  overflow-x: hidden;
+  overflow: visible;
 }
-.ganesh-radiance {
-  inset: 0;
-}
+
 @media (max-width: 700px) {
   .darbar-actions {
     bottom: 18.6%;
@@ -486,4 +476,72 @@
     margin-inline: auto;
     mask-image: radial-gradient(ellipse, #000 60%, transparent 94%);
   }
+}
+
+/* Cinematic optical timing follows the invitation's 2.2s reveal, not UI chrome. */
+@keyframes ganesh-aura-breathe {
+  0%, 100% { transform: scale(.97); opacity: .72; }
+  50% { transform: scale(1.045); opacity: .94; }
+}
+.ganesh-image img { animation: ganesh-unveil 2.2s ease-out both; }
+@keyframes ganesh-unveil {
+  0%, 28% { opacity: 0; }
+  82%, 100% { opacity: 1; }
+}
+.ganesh-layout .chapter-copy { animation: ganesh-copy-reveal 2.2s ease-out both; }
+@keyframes ganesh-copy-reveal {
+  0%, 58% { opacity: 0; transform: translateY(5px); }
+  100% { opacity: 1; transform: none; }
+}
+.ganesh-cloud-veil {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #100c07;
+  animation: ganesh-veil-clear 2.2s linear both;
+}
+.ganesh-cloud-veil i {
+  position: absolute;
+  inset: -12% -20%;
+  background:
+    radial-gradient(ellipse at 16% 65%, #8e6d4077, transparent 29%),
+    radial-gradient(ellipse at 38% 55%, #654a32bb, transparent 31%),
+    radial-gradient(ellipse at 62% 70%, #926e404f, transparent 28%),
+    radial-gradient(ellipse at 77% 30%, #382b20ee, transparent 42%);
+  animation: ganesh-cloud-open 2.2s cubic-bezier(.35,0,.25,1) both;
+  --cloud-x: -65vw;
+  --cloud-y: -14vh;
+}
+.ganesh-cloud-veil i:nth-child(2) { --cloud-x: 70vw; --cloud-y: 12vh; rotate: 180deg; }
+.ganesh-cloud-veil i:nth-child(3) { --cloud-x: -40vw; --cloud-y: 45vh; opacity: .55; }
+.ganesh-cloud-veil i:nth-child(4) { --cloud-x: 45vw; --cloud-y: -40vh; opacity: .4; }
+@keyframes ganesh-cloud-open {
+  0% { transform: translate3d(0,0,0) scale(1.08); }
+  25% { transform: translate3d(2vw,-1vh,0) scale(1.12); }
+  100% { transform: translate3d(var(--cloud-x),var(--cloud-y),0) scale(1.2); }
+}
+@keyframes ganesh-veil-clear {
+  0%, 23% { opacity: 1; }
+  45% { opacity: .8; }
+  70% { opacity: .32; }
+  100% { opacity: 0; }
+}
+.ganesh-ambience { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+.cloud-edge { position: absolute; width: 55%; height: 50%; opacity: .12; background: radial-gradient(ellipse, #bd955755, transparent 65%); animation: cloud-edge-drift 24s ease-in-out infinite alternate; }
+.cloud-edge-left { left: -35%; top: 15%; }
+.cloud-edge-right { right: -35%; bottom: 10%; animation-delay: -12s; }
+@keyframes cloud-edge-drift { to { transform: translate(8%, 6%); opacity: .22; } }
+.rare-star { position: absolute; left: 12%; top: 12%; width: 38px; height: 1px; background: linear-gradient(90deg, transparent, #e0c58c); opacity: 0; animation: rare-star 32s linear 17s infinite; }
+@keyframes rare-star {
+  0%, 95%, 100% { opacity: 0; transform: translate(0,0) rotate(26deg); }
+  96% { opacity: .4; }
+  98% { opacity: 0; transform: translate(95px,46px) rotate(26deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ganesh-image img, .ganesh-layout .chapter-copy, .ganesh-radiance { animation: none; }
+  .ganesh-cloud-veil, .ganesh-ambience { display: none; }
+}
+
+@media (max-width: 700px) {
+  .ganesh-layout { overflow-y: auto; overflow-x: hidden; scrollbar-width: none; }
 }

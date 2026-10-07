@@ -264,11 +264,11 @@ export default function Experience({
     if (!reduced) setBridge("ignition");
     transitionTimer.current = setTimeout(
       () => setStage("ganesh"),
-      reduced ? 450 : 4500,
+      0,
     );
     bridgeTimer.current = setTimeout(
       () => setBridge(null),
-      reduced ? 450 : 6700,
+      reduced ? 0 : 2200,
     );
   }
   function next() {
@@ -438,7 +438,9 @@ export default function Experience({
               className={`light-bridge bridge-${bridge}`}
               aria-hidden="true"
             >
-              <div className="bridge-core" />
+              {bridge === "ignition" ? (
+                <div className="ganesh-cloud-veil"><i /><i /><i /><i /></div>
+              ) : <div className="bridge-core" />}
               {(bridge === "balloons" || bridge === "closing") && (
                 <div className="balloon-veil">
                   {Array.from({ length: 7 }, (_, i) => (
@@ -522,6 +524,11 @@ export default function Experience({
               )}
               {stage === "ganesh" && (
                 <div className="ganesh-layout">
+                  <div className="ganesh-ambience" aria-hidden="true">
+                    <i className="cloud-edge cloud-edge-left" />
+                    <i className="cloud-edge cloud-edge-right" />
+                    <i className="rare-star" />
+                  </div>
                   <div className="ganesh-image">
                     <div className="ganesh-radiance" aria-hidden="true" />
                     <div className="blessing-dust" aria-hidden="true">
