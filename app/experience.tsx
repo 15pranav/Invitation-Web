@@ -538,6 +538,9 @@ export default function Experience({
                     </div>
                     <img
                       src="/art/ganesh-ji.webp"
+                      width={1000}
+                      height={1000}
+                      draggable={false}
                       alt="Ganesh Ji, an auspicious beginning"
                       fetchPriority="high"
                     />

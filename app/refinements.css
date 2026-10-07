@@ -138,11 +138,9 @@
 @keyframes blessing-reveal {
   from {
     clip-path: circle(3% at 42% 65%);
-    filter: brightness(2);
   }
   to {
     clip-path: circle(150% at 42% 65%);
-    filter: brightness(1);
   }
 }
 .ganesh-image {
@@ -152,7 +150,9 @@
 .ganesh-image img {
   position: relative;
   z-index: 1;
-  animation: blessing-breathe 14s ease-in-out infinite;
+  /* Keep the subject on a stable, fully opaque raster. Only its aura breathes. */
+  animation: none;
+  opacity: 1;
 }
 .ganesh-radiance {
   position: absolute;
@@ -474,5 +474,16 @@
   }
   .stage-atmosphere:after {
     content: none;
+  }
+}
+
+@media (max-width: 700px) {
+  .ganesh-image img {
+    width: auto;
+    max-width: 100%;
+    height: 100%;
+    aspect-ratio: 1;
+    margin-inline: auto;
+    mask-image: radial-gradient(ellipse, #000 60%, transparent 94%);
   }
 }
