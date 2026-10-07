@@ -570,3 +570,16 @@
 .bridge-ignition ~ .chapter .ganesh-image img { animation-duration:1.65s; }
 .bridge-ignition ~ .chapter .chapter-copy { animation-duration:1.65s; }
 @media(prefers-reduced-motion:reduce) { .bridge-ignition::before {display:none} }
+
+/* Offered petals reuse the ambient shape/material; only their flight differs. */
+.darbar-petals .offered-petals {position:absolute;inset:0;--offer-origin-x:79%;--offer-origin-y:53%;--offer-travel-x:-29vw;--offer-travel-y:19vh}
+.darbar-petals .offered-petals i {left:var(--offer-origin-x);top:var(--offer-origin-y);width:11px;height:15px;animation:offering-to-altar 1.85s cubic-bezier(.22,.61,.36,1) both}
+@keyframes offering-to-altar {
+  0% {opacity:0;transform:translate3d(0,0,0) rotate(0) scale(.6)}
+  12% {opacity:.95}
+  52% {opacity:.9;transform:translate3d(calc(var(--offer-travel-x) * .65 + var(--offer-spread)),calc(var(--offer-travel-y) - 8vh),0) rotate(var(--offer-turn)) scale(1)}
+  80% {opacity:.8;transform:translate3d(calc(var(--offer-travel-x) + var(--offer-spread)),var(--offer-travel-y),0) rotate(var(--offer-turn)) scale(.7)}
+  100% {opacity:0;transform:translate3d(calc(var(--offer-travel-x) + var(--offer-spread)),calc(var(--offer-travel-y) + 1vh),0) rotate(var(--offer-turn)) scale(.4)}
+}
+@media(max-width:700px){.darbar-petals .offered-petals{--offer-origin-x:44%;--offer-origin-y:78%;--offer-travel-x:6vw;--offer-travel-y:-9vh}}
+@media(prefers-reduced-motion:reduce){.darbar-petals .offered-petals i{left:50%;top:70%;animation:offering-still 1.5s ease-out both} @keyframes offering-still{0%,100%{opacity:0}20%,70%{opacity:.8}}}

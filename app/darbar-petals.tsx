@@ -5,7 +5,7 @@ const random = (seed: number) => {
   const n = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
   return n - Math.floor(n);
 };
-export default function DarbarPetals({ boosted }: { boosted: boolean }) {
+export default function DarbarPetals({ boosted, offering=0 }: { boosted: boolean; offering?:number }) {
   return <div className={`darbar-petals${boosted ? " boosted" : ""}`} aria-hidden="true">
     {Array.from({ length: 32 }, (_, i) => <span key={i} className={i < 18 ? "petal-lane" : "petal-lane surge"}>
       <i style={{
@@ -17,5 +17,6 @@ export default function DarbarPetals({ boosted }: { boosted: boolean }) {
         "--petal-turn": `${90 + random(i + 200) * 260}deg`,
       } as CSSProperties} />
     </span>)}
+    {offering > 0 && <span key={offering} className="offered-petals">{Array.from({length:9},(_,i)=><i key={i} style={{"--offer-spread":`${(i-4)*.9}vw`,"--offer-turn":`${i*43-160}deg`,animationDelay:`${i*.035}s`} as CSSProperties} />)}</span>}
   </div>;
 }

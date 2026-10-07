@@ -106,6 +106,7 @@ export default function Experience({
       | null
     >(null);
   const [petalSurge, setPetalSurge] = useState(false);
+  const [offeringCue,setOfferingCue] = useState(0);
   const main = useRef<HTMLElement>(null);
   const atmosphereFrame = useRef(0);
   const [scrollPair, setScrollPair] = useState<[string, string] | null>(null);
@@ -702,7 +703,7 @@ export default function Experience({
                 )}
                 {chapterStage === "darbar" && (
                   <>
-                    <DarbarPetals boosted={petalSurge} />
+                    <DarbarPetals boosted={petalSurge} offering={offeringCue} />
                     <div className="darbar-title">
                       <p className="eyebrow">IN THE PRESENCE OF THE DIVINE</p>
                       <h1
@@ -731,6 +732,7 @@ export default function Experience({
                             // ease back to baseline (CSS fades the surge layer
                             // out over ~2s — no snap back).
                             setPetalSurge(true);
+                            setOfferingCue(n=>n+1);
                             if (surgeTimer.current)
                               clearTimeout(surgeTimer.current);
                             surgeTimer.current = setTimeout(
