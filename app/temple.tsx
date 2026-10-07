@@ -657,7 +657,7 @@ export default function Temple({
             ? 0
             : reduced
               ? 1
-              : THREE.MathUtils.smoothstep(age, 0.18, 1.55);
+              : THREE.MathUtils.smoothstep(age, exposeAt ? 0.18 : 0.03, exposeAt ? 1.55 : 0.4);
       flames.forEach((f, i) => {
         const warmth = Math.exp(-(now - lampHeat[i]) / 850);
         f.group.visible = catchLight > 0;
@@ -681,7 +681,7 @@ export default function Temple({
         ambient.intensity = 0.38 + catchLight * 0.32;
         if (aura)
           (aura.material as THREE.ShaderMaterial).uniforms.strength.value =
-            0.03 + THREE.MathUtils.smoothstep(age, 0.6, 1.5) * 0.6;
+            0.03 + THREE.MathUtils.smoothstep(age, exposeAt ? 0.6 : 0.2, exposeAt ? 1.5 : 0.9) * 0.6;
         if (!reduced && exposeAt) {
           // Diya emerges from darkness: exposure blooms in, body settles to
           // full scale, while the flame sequence above stages after it.

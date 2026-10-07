@@ -559,3 +559,14 @@
   .darbar-actions .ritual-button { padding: 8px 9px; gap: 7px; font-size: 16px; white-space: nowrap; }
   .darbar-actions .ritual-button svg { width: 17px; height: 17px; }
 }
+
+/* The diya lights first; cloud coverage peaks at the 1.55s scene handoff. */
+.bridge-ignition::before { content:""; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 65%,#e9b55c77,transparent 62%); animation:diya-first-bloom 3.2s ease-out both; }
+@keyframes diya-first-bloom { 0% {opacity:0;transform:scale(.3)} 28% {opacity:.75;transform:scale(1)} 55% {opacity:.7;transform:scale(1.15)} 100% {opacity:0;transform:scale(1.3)} }
+.bridge-ignition .ganesh-cloud-veil { animation:diya-cloud-bridge 3.2s linear both; background:radial-gradient(ellipse at 50% 58%,#68502d,#241a11 76%); }
+.bridge-ignition .ganesh-cloud-veil i { animation:diya-cloud-travel 3.2s ease-in-out both; }
+@keyframes diya-cloud-bridge { 0%,25% {opacity:0} 46%,53% {opacity:1} 72% {opacity:.65} 100% {opacity:0} }
+@keyframes diya-cloud-travel { 0%,25% {transform:translate3d(calc(var(--cloud-x) * -.6),calc(var(--cloud-y) * -.6),0) scale(1.15)} 47%,55% {transform:translate3d(0,0,0) scale(1.08)} 100% {transform:translate3d(var(--cloud-x),var(--cloud-y),0) scale(1.2)} }
+.bridge-ignition ~ .chapter .ganesh-image img { animation-duration:1.65s; }
+.bridge-ignition ~ .chapter .chapter-copy { animation-duration:1.65s; }
+@media(prefers-reduced-motion:reduce) { .bridge-ignition::before {display:none} }

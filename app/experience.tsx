@@ -321,8 +321,8 @@ export default function Experience({
     sound.start();
     sound.bell();
     if (!reduced) setBridge("ignition");
-    transitionTimer.current = setTimeout(() => setStage("ganesh"), 0);
-    bridgeTimer.current = setTimeout(() => setBridge(null), reduced ? 0 : 2200);
+    transitionTimer.current = setTimeout(() => setStage("ganesh"), reduced ? 0 : 1550);
+    bridgeTimer.current = setTimeout(() => setBridge(null), reduced ? 0 : 3200);
   }
   function next() {
     go(visible[Math.min(index + 1, visible.length - 1)].id);
