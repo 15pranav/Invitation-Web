@@ -1,0 +1,367 @@
+.card-carrier {
+  position: absolute;
+  width: 194px;
+  height: 284px;
+  transform-style: preserve-3d;
+}
+.card-carrier .ceremony-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  /* Matches the drag gesture's own touch-action on the active card. Without
+     this, taps on side cards are claimed by the page's scroll intent and
+     cancelled (pointercancel) before onPointerUp can select the card. */
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+/* The deck container must stay a FLATTENED 3D context. With
+   `transform-style: preserve-3d` here, Chromium fails to hit-test any card
+   carrier whose transform includes a negative translateZ (every fanned side
+   card): the cards paint, but elementFromPoint/pointer events skip them, so
+   side-card taps fall through to the deck. Each card still gets its depth
+   cue from `.deck { perspective }` and `.ceremony-card { perspective }`. */
+.physical-deck .deck {
+  transform-style: flat;
+}
+.phase-stacked .card-inner {
+  animation: stack-breath 7s ease-in-out infinite;
+}
+.deck-gold-trail {
+  position: absolute;
+  inset: 50%;
+  pointer-events: none;
+  z-index: 40;
+}
+.deck-gold-trail i {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #d8b879;
+  animation: card-dust 0.8s ease-out both;
+}
+.light-bridge {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+}
+.bridge-core {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 50% 55%,
+    #fff8de 0%,
+    #f9dfac 50%,
+    #e4ac64 100%
+  );
+}
+.bridge-ignition .bridge-core {
+  animation: ignition-wash 6.7s ease-in-out both;
+}
+.bridge-birthday .bridge-core {
+  animation: birthday-wash 4.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+.bridge-cards .bridge-core {
+  animation: cards-wash 1.15s ease-in-out both;
+}
+/* Signature Maa → Deck blessing: a warm gold bloom that grows for over a
+   second, fills the screen, holds through the deck's arrival, then recedes.
+   Deliberately slower and richer than the generic scene washes. */
+.bridge-blessing .bridge-core {
+  background: radial-gradient(
+    ellipse at 50% 42%,
+    #fff0cd 0%,
+    #f6d492 38%,
+    #e2a960 68%,
+    #b97f3f 100%
+  );
+  animation: blessing-wash 2.05s ease-in-out both;
+}
+@keyframes blessing-wash {
+  0% {
+    clip-path: circle(0% at 50% 42%);
+    opacity: 1;
+  }
+  18% {
+    clip-path: circle(9% at 50% 42%);
+  }
+  55% {
+    clip-path: circle(46% at 50% 42%);
+  }
+  72% {
+    clip-path: circle(150vmax at 50% 42%);
+    opacity: 1;
+  }
+  86% {
+    clip-path: circle(150vmax at 50% 42%);
+    opacity: 0.85;
+  }
+  100% {
+    clip-path: circle(150vmax at 50% 42%);
+    opacity: 0;
+  }
+}
+/* Balloon foreground veils (birthday → memories, and into the finale). */
+.bridge-balloons .bridge-core,
+.bridge-closing .bridge-core {
+  display: none;
+}
+.balloon-veil {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.balloon-veil i {
+  position: absolute;
+  bottom: -32%;
+  width: min(24vw, 150px);
+  aspect-ratio: 0.92;
+  border-radius: 50% 50% 46% 54% / 55% 55% 45% 45%;
+  background: var(--balloon-skin, radial-gradient(circle at 32% 28%, #f4e0c0, #a8794c 62%, #4a3c2b33));
+  box-shadow: inset -8px -14px 24px #00000030;
+  opacity: 0;
+  animation: veil-rise 1.4s cubic-bezier(0.45, 0.1, 0.35, 1) both;
+}
+.balloon-veil i::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 1px;
+  height: 130px;
+  background: linear-gradient(#d5b17d88, transparent);
+}
+@keyframes veil-rise {
+  0% {
+    transform: translateY(12vh) scale(0.55);
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-8vh) scale(1.35);
+    opacity: 1;
+  }
+  78% {
+    transform: translateY(-42vh) scale(1.1);
+    opacity: 0.95;
+  }
+  100% {
+    transform: translateY(-125vh) scale(0.8);
+    opacity: 0;
+  }
+}
+/* Finale: warm light gathers where the diya will appear, then lingers
+   softly as the closing text fades in above it. */
+.closing-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 64%,
+    #f3cf8ecc 0%,
+    #cf955066 32%,
+    transparent 68%
+  );
+  animation: closing-glow 2.1s ease-in-out both;
+}
+@keyframes closing-glow {
+  0%,
+  22% {
+    opacity: 0;
+    transform: scale(0.35);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.25);
+  }
+}
+.skip-journey {
+  position: fixed;
+  right: 20px;
+  top: 78px;
+  z-index: 60;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid #7b552c;
+  border-radius: 30px;
+  color: #4e2c13;
+  background: #fff0d9;
+  font-size: 12px;
+}
+.cms-card-list {
+  list-style: none;
+  padding: 0;
+  margin: 22px 0;
+}
+.cms-card-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #ded6c9;
+  border-radius: 12px;
+  background: #fffdf8;
+  margin: 8px 0;
+  padding: 6px;
+}
+.cms-card-row.active {
+  border-color: #986747;
+}
+.cms-card-row.hidden-card {
+  background: #eae7e2;
+}
+.card-drag-handle {
+  touch-action: none;
+  cursor: grab;
+  min-width: 44px;
+  min-height: 44px;
+}
+.card-row-title {
+  flex: 1;
+  text-align: left;
+  min-height: 44px;
+  font-size: 14px;
+}
+.card-row-title small {
+  display: block;
+  color: #6d6256;
+  font-size: 11px;
+  margin-top: 4px;
+}
+.card-row-tools {
+  display: flex;
+}
+.card-row-tools button {
+  min-width: 40px;
+  min-height: 44px;
+}
+.card-auto-toggle {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-height: 44px;
+  font-size: 14px;
+}
+.card-editor-help {
+  color: #74695e;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.card-detail {
+  margin-top: 24px;
+}
+.card-editor button:disabled {
+  opacity: 0.35;
+}
+.card-editor button:focus-visible {
+  outline: 2px solid #9b653a;
+  outline-offset: 2px;
+}
+@keyframes stack-breath {
+  50% {
+    transform: translateY(-2px);
+  }
+}
+@keyframes card-dust {
+  0% {
+    opacity: 0;
+    transform: translate(0, 20px);
+  }
+  20% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--trail-x), var(--trail-y));
+  }
+}
+@keyframes ignition-wash {
+  0%,
+  38% {
+    clip-path: circle(0 at 50% 62%);
+  }
+  48% {
+    clip-path: circle(4% at 50% 62%);
+  }
+  64%,
+  80% {
+    clip-path: circle(150vmax at 50% 62%);
+    opacity: 1;
+  }
+  100% {
+    clip-path: circle(150vmax at 50% 62%);
+    opacity: 0;
+  }
+}
+@keyframes birthday-wash {
+  0% {
+    clip-path: circle(0 at 50% 43%);
+  }
+  32% {
+    clip-path: circle(4% at 53% 40%);
+  }
+  50%,
+  68% {
+    clip-path: circle(150vmax at 55% 42%);
+  }
+  88% {
+    clip-path: circle(5% at 75% 45%);
+    opacity: 1;
+  }
+  100% {
+    clip-path: circle(0 at 75% 45%);
+    opacity: 0;
+  }
+}
+@keyframes cards-wash {
+  0% {
+    clip-path: circle(0 at 50% 50%);
+    opacity: 1;
+  }
+  35%,
+  65% {
+    clip-path: circle(150vmax at 50% 50%);
+    opacity: 1;
+  }
+  100% {
+    clip-path: circle(150vmax at 50% 50%);
+    opacity: 0;
+  }
+}
+@media (max-width: 700px) {
+  .card-carrier {
+    width: 175px;
+    height: 264px;
+  }
+  .cms-card-row {
+    flex-wrap: wrap;
+  }
+  .card-row-tools {
+    margin-left: auto;
+  }
+  .card-row-tools button {
+    min-width: 44px;
+  }
+  .card-row-title {
+    flex-basis: 70%;
+  }
+}
+@media (max-height: 760px) {
+  .card-carrier {
+    height: 248px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .phase-stacked .card-inner,
+  .deck-gold-trail i,
+  .bridge-core {
+    animation: none;
+  }
+}

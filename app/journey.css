@@ -1,0 +1,167 @@
+.scene-scroll {
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-snap-type: y proximity;
+  overscroll-behavior-y: contain;
+  scrollbar-width: none;
+  outline: none;
+}
+.scene-scroll::-webkit-scrollbar {
+  display: none;
+}
+.scene-scroll.scroll-paused {
+  overflow-y: hidden;
+}
+.scene-scroll > .experience {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow: hidden;
+}
+.scene-scroll-space {
+  pointer-events: none;
+}
+.scene-snap {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+  scroll-snap-align: start;
+}
+.scroll-hint {
+  display: block;
+  font:
+    8px "DM Sans",
+    sans-serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-top: 6px;
+  opacity: 0.6;
+}
+.menu-sound {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid #c6a06d40 !important;
+  margin-bottom: 10px;
+}
+.chapter-menu {
+  max-height: calc(100dvh - 100px);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.scene-audio-editor details {
+  border-top: 1px solid #bdb0a066;
+  padding: 16px 0;
+}
+.scene-audio-editor summary {
+  cursor: pointer;
+  font-size: 16px;
+  min-height: 44px;
+}
+.scene-audio-editor summary small {
+  display: block;
+  font-size: 12px;
+  color: #766757;
+  margin-top: 5px;
+}
+.scene-audio-editor audio {
+  max-width: 100%;
+  margin: 16px 0;
+}
+.scene-audio-editor > p {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #766757;
+}
+.card-front.theme-wine {
+  background: radial-gradient(ellipse at 50% 35%, #704532, #341718 80%);
+}
+.card-front.theme-maroon {
+  background: radial-gradient(ellipse at 50% 35%, #64393a, #30121d 80%);
+}
+.card-front.theme-charcoal {
+  background: radial-gradient(ellipse at 50% 35%, #473f37, #191b1c 80%);
+}
+.card-front.theme-olive {
+  background: radial-gradient(ellipse at 50% 35%, #59503b, #28241e 80%);
+}
+.card-front.theme-bronze {
+  background: radial-gradient(ellipse at 50% 35%, #70503a, #302219 80%);
+}
+.card-front.theme-ivory {
+  background: radial-gradient(ellipse at 50% 35%, #88775a, #4c4132 80%);
+}
+.stage-opening {
+  background: radial-gradient(ellipse at 50% 65%, #23120b, #080706 70%);
+}
+.stage-ganesh {
+  background: radial-gradient(ellipse at 50% 32%, #3b2915, #100d08 70%);
+}
+.stage-darbar {
+  background: radial-gradient(ellipse at 50% 48%, #431316, #100607 77%);
+}
+.stage-deck {
+  background: radial-gradient(ellipse at 50% 64%, #321a27, #100b11 75%);
+}
+.stage-bhajans {
+  background: radial-gradient(ellipse at 50% 70%, #282017, #090e12 75%);
+}
+.stage-birthday {
+  background: radial-gradient(ellipse at 58% 55%, #51362c, #201710 78%);
+}
+.stage-memories {
+  background: radial-gradient(ellipse at 45% 53%, #493a2e, #1b1712 76%);
+}
+.stage-venue {
+  background: radial-gradient(ellipse at 60% 45%, #362e21, #141310 80%);
+}
+.stage-finale {
+  background: radial-gradient(ellipse at 50% 64%, #3d2918, #0e0d0b 75%);
+}
+.stage-finale:after {
+  content: "";
+  position: absolute;
+  inset: 15% 10% 16%;
+  border-radius: 50%;
+  box-shadow: inset 0 0 100px #bd924114;
+  pointer-events: none;
+}
+.bridge-birthday .bridge-core {
+  animation-duration: calc(4.4s * var(--journey-speed, 1));
+}
+.memory-photo {
+  transition:
+    transform 0.35s ease,
+    box-shadow 0.35s ease;
+}
+.memory-photo.photo-lift {
+  transform: translateY(-7px) rotate(-2deg) scale(1.025);
+  box-shadow: 0 28px 60px #0009;
+}
+.scene-scroll:focus-visible {
+  outline: 1px solid #b38a55;
+  outline-offset: -2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .scene-scroll {
+    scroll-behavior: auto;
+    scroll-snap-type: y proximity;
+  }
+  .memory-photo.photo-lift {
+    transform: none;
+  }
+}
+
+.bridge-cards .bridge-core {
+  animation-duration: calc(1.15s * var(--journey-speed, 1));
+}
+.bridge-blessing .bridge-core {
+  animation-duration: calc(2.05s * var(--journey-speed, 1));
+}
+.scene-scroll:not(.scroll-paused) .chapter {
+  translate: 0 var(--scroll-drift, 0px);
+}

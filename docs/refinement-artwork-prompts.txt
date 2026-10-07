@@ -1,0 +1,8 @@
+Generated using the built-in image_gen tool. Both final WebP assets preserve genuine alpha transparency. These are 2D textures for a layered relief, not true 3D models.
+
+MATA RELIEF
+Use case: background-extraction. Asset type: transparent portrait relief texture for a reverent devotional WebGL shrine. Input image is the edit target. Remove only the complete dark backdrop, ground and painted circular gold halo/mandala behind Mata Rani. Preserve the entire Mata Rani and tiger subject exactly: dignified serene face, crown, hair, all arms, handheld objects, red sari, intricate gold jewelry, tiger anatomy, whiskers and paws, composition and existing warm illumination. Make all background including gaps between limbs genuinely transparent with a clean detailed alpha edge; no matte, no replacement background, no halo. Full subject uncropped with small transparent margins. No text, no additional objects. The result must remain a respectful sacred illustration, not a toy or figurine.
+
+OFFERING FLOWER
+Use case: product-mockup. Asset type: transparent flower offering texture for a refined devotional shrine. One real deep crimson rose flower head, no stem, photographed in a gently angled top view, fully open natural layered petals with a few restrained warm golden edges from candlelight. Physical dimensional detailed velvety petals, elegant mature crimson hue, soft natural light, clean silhouette. Center the single bloom with generous transparent margin, genuinely transparent background, no ground, no cast shadow outside flower, no other objects, no lettering, no illustration or icon styling.
+
