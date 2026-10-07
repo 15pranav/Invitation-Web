@@ -3,7 +3,7 @@
   inset: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  scroll-snap-type: y proximity;
+  scroll-snap-type: none;
   overscroll-behavior-y: contain;
   scrollbar-width: none;
   outline: none;
@@ -95,34 +95,42 @@
 .card-front.theme-ivory {
   background: radial-gradient(ellipse at 50% 35%, #88775a, #4c4132 80%);
 }
-.stage-opening {
+.stage-atmosphere.stage-opening {
   background: radial-gradient(ellipse at 50% 65%, #23120b, #080706 70%);
 }
-.stage-ganesh {
+.stage-atmosphere.stage-ganesh {
   background: radial-gradient(ellipse at 50% 32%, #3b2915, #100d08 70%);
 }
-.stage-darbar {
-  background: radial-gradient(ellipse at 50% 48%, #6a2520 0%, #401219 36%, #1a080d 70%, #100607 100%);
+.stage-atmosphere.stage-darbar {
+  background: radial-gradient(
+    ellipse at 50% 48%,
+    #6a2520 0%,
+    #401219 36%,
+    #1a080d 70%,
+    #100607 100%
+  );
 }
-.stage-deck {
+.stage-atmosphere.stage-deck {
   background: radial-gradient(ellipse at 50% 64%, #321a27, #100b11 75%);
 }
-.stage-bhajans {
+.stage-atmosphere.stage-bhajans {
   background: radial-gradient(ellipse at 50% 70%, #282017, #090e12 75%);
 }
-.stage-birthday {
+.stage-atmosphere.stage-birthday {
   background: radial-gradient(ellipse at 58% 55%, #51362c, #201710 78%);
 }
-.stage-memories {
+.stage-atmosphere.stage-memories {
   background: radial-gradient(ellipse at 45% 53%, #493a2e, #1b1712 76%);
 }
-.stage-venue {
+.stage-atmosphere.stage-venue {
   background: radial-gradient(ellipse at 60% 45%, #362e21, #141310 80%);
 }
-.stage-finale {
+.stage-atmosphere.stage-finale {
   background: radial-gradient(ellipse at 50% 64%, #3d2918, #0e0d0b 75%);
 }
-.stage-finale:after { content: none; }
+.stage-finale:after {
+  content: none;
+}
 .bridge-birthday .bridge-core {
   animation-duration: calc(4.4s * var(--journey-speed, 1));
 }
@@ -142,7 +150,7 @@
 @media (prefers-reduced-motion: reduce) {
   .scene-scroll {
     scroll-behavior: auto;
-    scroll-snap-type: y proximity;
+    scroll-snap-type: none;
   }
   .memory-photo.photo-lift {
     transform: none;
@@ -155,6 +163,71 @@
 .bridge-blessing .bridge-core {
   animation-duration: calc(2.05s * var(--journey-speed, 1));
 }
-.scene-scroll:not(.scroll-paused) .chapter {
-  translate: 0 var(--scroll-drift, 0px);
+
+/* The pinned scene reads one native scroll value. No CSS snap competes with settling. */
+.experience.world-birthday {
+  background: #0d0908;
+}
+.scene-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.scene-layer .scene {
+  pointer-events: auto;
+}
+.is-scrubbing .stage-atmosphere[data-scroll-slot="0"],
+.is-scrubbing .scene-layer[data-scroll-slot="0"] {
+  opacity: calc(1 - var(--scene-blend, 0)) !important;
+}
+.is-scrubbing .stage-atmosphere[data-scroll-slot="1"],
+.is-scrubbing .scene-layer[data-scroll-slot="1"] {
+  opacity: var(--scene-blend, 0) !important;
+}
+.is-scrubbing .chapter[data-scroll-slot="0"] {
+  opacity: var(--content-out, 1) !important;
+  transform: translate3d(
+    0,
+    calc(var(--scene-progress, 0) * -28px),
+    0
+  ) !important;
+}
+.is-scrubbing .chapter[data-scroll-slot="1"] {
+  opacity: var(--content-in, 0) !important;
+  transform: translate3d(
+    0,
+    calc((1 - var(--scene-progress, 0)) * 28px),
+    0
+  ) !important;
+}
+.is-scrubbing .chapter *,
+.is-scrubbing .scene-layer * {
+  pointer-events: none !important;
+}
+.is-scrubbing .shared-scene {
+  opacity: var(--shared-scene-opacity, 1) !important;
+}
+.is-scrubbing .shared-scene .scene-darbar {
+  opacity: 1 !important;
+  filter: none;
+}
+.is-scrubbing .ganesh-image img,
+.is-scrubbing .chapter-copy,
+.scroll-arrived.stage-ganesh .ganesh-image img,
+.scroll-arrived.stage-ganesh .chapter-copy {
+  animation: none;
+}
+.is-scrubbing .finale-scrub-hidden {
+  visibility: hidden !important;
+}
+.is-scrubbing .finale-sequence {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .is-scrubbing .chapter {
+    transform: none !important;
+  }
+  .scene-layer canvas {
+    transition: none;
+  }
 }

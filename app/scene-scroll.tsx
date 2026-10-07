@@ -1,11 +1,14 @@
 "use client";
 import { useEffect, useRef, type ReactNode } from "react";
+import { clamp, sceneInterval, settleIndex } from "./scene-progress";
+export type ScrollPair = { from: string; to: string; progress: number } | null;
 export default function SceneScroll({
   stage,
   chapters,
   active,
   blocked,
   onNavigate,
+  onProgress,
   children,
 }: {
   stage: string;
@@ -13,187 +16,221 @@ export default function SceneScroll({
   active: boolean;
   blocked: boolean;
   onNavigate: (id: string, speed: number) => void;
+  onProgress: (pair: ScrollPair) => void;
   children: ReactNode;
 }) {
-  const rail = useRef<HTMLDivElement>(null),
-    last = useRef({ top: 0, time: 0 }),
-    requested = useRef(stage),
-    syncing = useRef(false),
-    gliding = useRef(false),
-    glide = useRef<number | null>(null),
-    release = useRef<ReturnType<typeof setTimeout> | null>(null),
-    settle = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const ids = ["opening", ...chapters.map((c) => c.id)];
-  function stopGlide() {
-    if (glide.current !== null) cancelAnimationFrame(glide.current);
-    glide.current = null;
-    gliding.current = false;
-  }
-  // Eased programmatic settle: controlled deceleration instead of the
-  // browser's generic smooth-scroll, canceled the instant the user
-  // touches the wheel/trackpad/screen so it never fights their finger.
-  function glideTo(el: HTMLElement, target: number) {
-    stopGlide();
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      el.scrollTop = target;
-      return;
-    }
-    const from = el.scrollTop,
-      delta = target - from;
-    if (Math.abs(delta) < 2) return;
-    const t0 = performance.now(),
-      duration = Math.min(680, 240 + (Math.abs(delta) / el.clientHeight) * 300);
-    gliding.current = true;
-    const step = (now: number) => {
-      const q = Math.min(1, (now - t0) / duration),
-        eased = 1 - Math.pow(1 - q, 3);
-      el.scrollTop = from + delta * eased;
-      if (q < 1) glide.current = requestAnimationFrame(step);
-      else {
-        glide.current = null;
-        gliding.current = false;
-        last.current = { top: el.scrollTop, time: performance.now() };
-      }
+  const rail = useRef<HTMLDivElement>(null);
+  const callbacks = useRef({ onNavigate, onProgress });
+  const requested = useRef(stage);
+  const cancel = useRef(() => {});
+  const syncUntil = useRef(0);
+  const idsKey = ["opening", ...chapters.map((c) => c.id)].join("|");
+  useEffect(() => {
+    callbacks.current = { onNavigate, onProgress };
+  }, [onNavigate, onProgress]);
+  useEffect(() => {
+    const el = rail.current;
+    if (!el) return;
+    const ids = idsKey.split("|");
+    let frame = 0,
+      settle: ReturnType<typeof setTimeout> | undefined,
+      touching = false,
+      gliding = false;
+    let lastTop = el.scrollTop,
+      lastTime = performance.now(),
+      velocity = 0,
+      height = el.clientHeight;
+    const reduced = () =>
+      matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const stop = () => {
+      cancelAnimationFrame(frame);
+      frame = 0;
+      gliding = false;
+      clearTimeout(settle);
     };
-    glide.current = requestAnimationFrame(step);
-  }
-  useEffect(() => {
-    const el = rail.current;
-    if (!el) return;
-    const index = ids.indexOf(stage);
-    if (index < 0) return;
-    if (requested.current !== stage) {
-      stopGlide();
-      syncing.current = true;
-      requested.current = stage;
-      if (settle.current) clearTimeout(settle.current);
-      el.scrollTo({ top: index * el.clientHeight, behavior: "instant" });
-      last.current = { top: el.scrollTop, time: performance.now() };
-      if (release.current) clearTimeout(release.current);
-      release.current = setTimeout(() => {
-        syncing.current = false;
-      }, 80);
-    }
-  }, [stage, chapters.map((c) => c.id).join("|")]);
-  useEffect(() => {
-    const el = rail.current;
-    if (!el) return;
-    const observer = new ResizeObserver(() => {
-      stopGlide();
-      syncing.current = true;
-      el.scrollTo({
-        top: Math.max(0, ids.indexOf(requested.current)) * el.clientHeight,
-        behavior: "instant",
+    cancel.current = stop;
+    const paint = () => {
+      if (reduced()) return;
+      const p = sceneInterval(el.scrollTop / el.clientHeight, ids.length);
+      callbacks.current.onProgress({
+        from: ids[p.from],
+        to: ids[p.to],
+        progress: p.progress,
       });
-      if (release.current) clearTimeout(release.current);
-      release.current = setTimeout(() => {
-        syncing.current = false;
-      }, 80);
+    };
+    const commit = (index: number) => {
+      requested.current = ids[index];
+      callbacks.current.onNavigate(ids[index], 1);
+      callbacks.current.onProgress(null);
+    };
+    const glideTo = (index: number) => {
+      stop();
+      const from = el.scrollTop,
+        target = index * el.clientHeight,
+        delta = target - from;
+      if (reduced() || Math.abs(delta) < 0.5) {
+        el.scrollTop = target;
+        commit(index);
+        return;
+      }
+      gliding = true;
+      const start = performance.now(),
+        duration = clamp(
+          340 + (Math.abs(delta) / el.clientHeight) * 240,
+          340,
+          580,
+        );
+      const step = (now: number) => {
+        const p = clamp((now - start) / duration, 0, 1);
+        el.scrollTop = from + delta * (1 - Math.pow(1 - p, 3));
+        paint();
+        if (p < 1) frame = requestAnimationFrame(step);
+        else {
+          gliding = false;
+          frame = 0;
+          lastTop = el.scrollTop;
+          velocity = 0;
+          commit(index);
+        }
+      };
+      frame = requestAnimationFrame(step);
+    };
+    const schedule = () => {
+      clearTimeout(settle);
+      if (touching || !active || blocked || gliding) return;
+      settle = setTimeout(
+        () =>
+          glideTo(
+            settleIndex(el.scrollTop / el.clientHeight, velocity, ids.length),
+          ),
+        150,
+      );
+    };
+    const scroll = () => {
+      if (
+        !active ||
+        blocked ||
+        gliding ||
+        performance.now() < syncUntil.current
+      )
+        return;
+      const now = performance.now();
+      // One scene per gesture; native touch inertia still supplies the progress.
+      const index = Math.max(1, ids.indexOf(requested.current));
+      if (Math.abs(el.scrollTop - index * el.clientHeight) < 0.5) {
+        velocity = 0;
+        lastTop = el.scrollTop;
+        lastTime = now;
+        callbacks.current.onProgress(null);
+        return;
+      }
+      const bounded = clamp(
+        el.scrollTop,
+        Math.max(1, index - 1) * el.clientHeight,
+        Math.min(ids.length - 1, index + 1) * el.clientHeight,
+      );
+      if (Math.abs(bounded - el.scrollTop) > 0.5) el.scrollTop = bounded;
+      velocity =
+        (el.scrollTop - lastTop) /
+        Math.max(16, now - lastTime) /
+        el.clientHeight;
+      lastTop = el.scrollTop;
+      lastTime = now;
+      paint();
+      schedule();
+    };
+    const wheel = () => {
+      stop();
+      schedule();
+    };
+    const down = () => {
+      touching = true;
+      stop();
+    };
+    const up = () => {
+      touching = false;
+      schedule();
+    };
+    const key = (e: KeyboardEvent) => {
+      if (
+        !active ||
+        blocked ||
+        (e.target instanceof Element &&
+          e.target.closest('button,input,textarea,select,a,[role="dialog"]'))
+      )
+        return;
+      if (
+        ![
+          "ArrowDown",
+          "PageDown",
+          "ArrowUp",
+          "PageUp",
+          "Home",
+          "End",
+          " ",
+        ].includes(e.key)
+      )
+        return;
+      e.preventDefault();
+      const i = ids.indexOf(requested.current);
+      glideTo(
+        e.key === "Home"
+          ? 1
+          : e.key === "End"
+            ? ids.length - 1
+            : clamp(
+                i + (["ArrowUp", "PageUp"].includes(e.key) ? -1 : 1),
+                1,
+                ids.length - 1,
+              ),
+      );
+    };
+    const observer = new ResizeObserver(() => {
+      const page = height
+        ? el.scrollTop / height
+        : ids.indexOf(requested.current);
+      stop();
+      syncUntil.current = performance.now() + 60;
+      height = el.clientHeight;
+      el.scrollTop = page * height;
+      lastTop = el.scrollTop;
     });
     observer.observe(el);
-    // Any fresh user input (wheel/trackpad/touch/pointer) cancels both the
-    // in-flight glide AND any pending settle timer — otherwise a settle fired
-    // right after a new touch felt like a late snap or double jump fighting
-    // the finger.
-    const cancelGlide = () => {
-      stopGlide();
-      if (settle.current) {
-        clearTimeout(settle.current);
-        settle.current = null;
-      }
-    };
-    el.addEventListener("wheel", cancelGlide, { passive: true });
-    el.addEventListener("touchstart", cancelGlide, { passive: true });
-    el.addEventListener("pointerdown", cancelGlide, { passive: true });
+    el.addEventListener("scroll", scroll, { passive: true });
+    el.addEventListener("wheel", wheel, { passive: true });
+    el.addEventListener("touchstart", down, { passive: true });
+    el.addEventListener("touchend", up, { passive: true });
+    el.addEventListener("touchcancel", up, { passive: true });
+    el.addEventListener("keydown", key);
     return () => {
+      stop();
       observer.disconnect();
-      stopGlide();
-      el.removeEventListener("wheel", cancelGlide);
-      el.removeEventListener("touchstart", cancelGlide);
-      el.removeEventListener("pointerdown", cancelGlide);
-      if (settle.current) clearTimeout(settle.current);
-      if (release.current) clearTimeout(release.current);
+      el.removeEventListener("scroll", scroll);
+      el.removeEventListener("wheel", wheel);
+      el.removeEventListener("touchstart", down);
+      el.removeEventListener("touchend", up);
+      el.removeEventListener("touchcancel", up);
+      el.removeEventListener("keydown", key);
     };
-  }, [ids.join("|")]);
-  function navigate(index: number, speed = 1) {
-    const id = ids[Math.max(1, Math.min(ids.length - 1, index))];
-    if (id === requested.current) return;
-    requested.current = id;
-    onNavigate(id, speed);
-  }
+  }, [idsKey, active, blocked]);
+  useEffect(() => {
+    const el = rail.current;
+    if (!el) return;
+    if (stage !== requested.current) {
+      cancel.current();
+      syncUntil.current = performance.now() + 60;
+      requested.current = stage;
+      el.scrollTop =
+        Math.max(0, idsKey.split("|").indexOf(stage)) * el.clientHeight;
+      callbacks.current.onProgress(null);
+    }
+  }, [stage, idsKey]);
   return (
     <div
       ref={rail}
       className={`scene-scroll ${!active || blocked ? "scroll-paused" : ""}`}
       tabIndex={0}
       aria-label="Scroll through the celebration"
-      onScroll={(e) => {
-        const el = e.currentTarget,
-          now = performance.now();
-        const velocity =
-          Math.abs(el.scrollTop - last.current.top) /
-          Math.max(16, now - last.current.time);
-        last.current = { top: el.scrollTop, time: now };
-        if (!active || blocked || syncing.current || gliding.current) return;
-        const page = el.scrollTop / el.clientHeight;
-        el.style.setProperty(
-          "--scroll-drift",
-          `${(page - Math.round(page)) * -12}px`,
-        );
-        navigate(
-          Math.round(page),
-          Math.max(0.65, Math.min(1.15, 1.15 - velocity * 0.13)),
-        );
-        if (settle.current) clearTimeout(settle.current);
-        // Let a fast flick keep its momentum before easing to the snap target;
-        // slow drags settle almost immediately.
-        settle.current = setTimeout(
-          () => {
-            const target =
-              Math.max(1, Math.round(el.scrollTop / el.clientHeight)) *
-              el.clientHeight;
-            if (Math.abs(target - el.scrollTop) > 2) glideTo(el, target);
-          },
-          Math.max(120, Math.min(360, 120 + velocity * 650)),
-        );
-      }}
-      onKeyDown={(e) => {
-        if (
-          !active ||
-          blocked ||
-          (e.target instanceof Element &&
-            e.target.closest('button,input,textarea,select,a,[role="dialog"]'))
-        )
-          return;
-        const index = ids.indexOf(requested.current);
-        if (
-          [
-            "ArrowDown",
-            "PageDown",
-            "ArrowUp",
-            "PageUp",
-            "Home",
-            "End",
-            " ",
-          ].includes(e.key)
-        ) {
-          e.preventDefault();
-          const next =
-            e.key === "Home"
-              ? 1
-              : e.key === "End"
-                ? ids.length - 1
-                : index + (["ArrowUp", "PageUp"].includes(e.key) ? -1 : 1);
-          rail.current?.scrollTo({
-            top:
-              Math.max(1, Math.min(ids.length - 1, next)) *
-              rail.current.clientHeight,
-            behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
-              ? "instant"
-              : "smooth",
-          });
-        }
-      }}
     >
       {children}
       <div
@@ -201,14 +238,6 @@ export default function SceneScroll({
         style={{ height: `${chapters.length * 100}dvh` }}
         aria-hidden="true"
       />
-      {ids.map((id, i) => (
-        <div
-          key={id}
-          className="scene-snap"
-          style={{ top: `${i * 100}dvh` }}
-          aria-hidden="true"
-        />
-      ))}
     </div>
   );
 }

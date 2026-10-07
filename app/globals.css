@@ -390,12 +390,12 @@ h1 {
 .scene-darbar {
   inset: 15% 0 13%;
 }
-.stage-darbar .scene-darbar {
+.scene-layer.stage-darbar .scene-darbar {
   inset: 16% 0 15%;
 }
-.stage-ganesh .scene-darbar,
-.stage-deck .scene-darbar,
-.stage-bhajans .scene-darbar {
+.scene-layer.stage-ganesh .scene-darbar,
+.scene-layer.stage-deck .scene-darbar,
+.scene-layer.stage-bhajans .scene-darbar {
   opacity: 0.13 !important;
   filter: blur(6px);
   pointer-events: none;
@@ -1241,7 +1241,7 @@ h1 {
   color: var(--gold);
   margin-top: 23px;
 }
-.stage-finale .scene-diya {
+.scene-layer.stage-finale .scene-diya {
   opacity: 0.25 !important;
   inset: 45% 0 -15%;
 }
@@ -1519,7 +1519,7 @@ textarea {
   .darbar-title h1 {
     font-size: 30px;
   }
-  .stage-darbar .scene-darbar {
+  .scene-layer.stage-darbar .scene-darbar {
     inset: 22% -10% 21%;
   }
   .darbar-side {

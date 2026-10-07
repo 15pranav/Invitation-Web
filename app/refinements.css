@@ -127,7 +127,7 @@
     opacity: 0.18;
   }
 }
-.stage-ganesh .scene-diya {
+.scene-layer.stage-ganesh .scene-diya {
   opacity: 0.09 !important;
   pointer-events: none;
   filter: blur(3px);
