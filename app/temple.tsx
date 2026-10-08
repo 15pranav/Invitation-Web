@@ -139,7 +139,7 @@ export default function Temple({
           wave: { value: 10 },
         },
         vertexShader: vertex,
-        fragmentShader: `varying vec2 vUv; uniform float time,strength,reaction,wave; void main(){vec2 p=(vUv-.5)*2.;float r=length(p);float a=atan(p.y,p.x);float core=exp(-r*r*5.)*.6;float rays=${rays ? "pow(abs(sin(a*18.+sin(a*7.)*.3+time*.025)),18.)*exp(-r*2.)*.28" : "0."};float fade=1.-smoothstep(.65,1.,r);float light=(core+rays+exp(-pow((r-wave*.45)*32.,2.))*.12*reaction)*fade*strength*(1.+sin(time*.35)*.035+reaction*.12);gl_FragColor=vec4(1.,.55,.19,light);}`,
+        fragmentShader: `varying vec2 vUv; uniform float time,strength,reaction,wave; void main(){vec2 p=(vUv-.5)*2.;float r=length(p);float a=atan(p.y,p.x);float core=exp(-r*r*5.)*.6;float rays=${rays ? "pow(abs(sin(a*18.+sin(a*7.)*.3+time*.025)),18.)*exp(-r*2.)*.28*(1.+.48*pow(max(0.,sin(a*3.+time*.55)),18.))" : "0."};float fade=1.-smoothstep(.65,1.,r);float light=(core+rays+exp(-pow((r-wave*.45)*32.,2.))*.12*reaction)*fade*strength*(1.+sin(time*.35)*.035+reaction*.12);gl_FragColor=vec4(1.,.55,.19,light);}`,
       });
       shaders.push(material);
       return mesh(new THREE.PlaneGeometry(size, size), material, x, y, z);
@@ -233,6 +233,9 @@ export default function Temple({
       return group;
     }
     let aura: THREE.Mesh | undefined;
+    let sacredRing: THREE.Group | undefined;
+    const sacredGlints: { mesh: THREE.Mesh; phase: number; period: number }[] =
+      [];
     const bells: THREE.Group[] = [],
       balloons: THREE.Group[] = [];
     const balloonBase: {
@@ -294,17 +297,43 @@ export default function Temple({
       ]) {
         mesh(new THREE.TorusGeometry(radius, 0.013, 6, 96), rim, 0, 1.8, z);
       }
+      sacredRing = new THREE.Group();
+      sacredRing.position.set(0, 1.8, -1.3);
+      scene.add(sacredRing);
+      const sacredRim = rim.clone();
+      sacredRim.emissiveIntensity = 0.28;
       for (let i = 0; i < 32; i++) {
         const a = (i / 32) * Math.PI * 2;
         const petal = mesh(
           new THREE.TorusGeometry(0.22, 0.009, 5, 22),
-          rim,
+          sacredRim,
           Math.sin(a) * 1.68,
-          1.8 + Math.cos(a) * 1.68,
-          -1.3,
+          Math.cos(a) * 1.68,
+          0,
+          sacredRing,
         );
         petal.scale.set(0.45, 1.45, 1);
         petal.rotation.z = -a;
+      }
+      // Three brief, anchored glints; existing frame loop and disposal own them.
+      for (const [x, y, z, period, phase] of [
+        [0.05, 3.24, 0.22, 19, 5],
+        [-1.48, 2.75, -0.65, 27, 14],
+        [1.25, 2.1, -0.55, 31, 23],
+      ]) {
+        const material = new THREE.ShaderMaterial({
+          transparent: true,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending,
+          uniforms: { amount: { value: 0 } },
+          vertexShader: vertex,
+          fragmentShader: `varying vec2 vUv; uniform float amount; void main(){vec2 p=(vUv-.5)*2.;float r=length(p);float core=exp(-r*r*22.);float crossLight=exp(-abs(p.x*p.y)*100.)*exp(-r*5.);gl_FragColor=vec4(1.,.84,.5,(core+crossLight*.3)*amount);}`,
+        });
+        sacredGlints.push({
+          mesh: mesh(new THREE.PlaneGeometry(0.16, 0.16), material, x, y, z),
+          period,
+          phase,
+        });
       }
       for (const side of [-1, 1]) {
         for (const [x, z, h] of [
@@ -445,7 +474,8 @@ export default function Temple({
 
       }
     }
-    const count = low ? 35 : 90,
+    // Maa uses the bounded CSS dust field behind the canvas, not both fields.
+    const count = mode === "darbar" ? 0 : low ? 35 : 90,
       positions = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
       positions[i * 3] = Math.sin(i * 127.1) * 4.5;
@@ -462,7 +492,7 @@ export default function Temple({
       depthWrite: false,
     });
     const dust = new THREE.Points(pg, pm);
-    scene.add(dust);
+    if (mode !== "darbar") scene.add(dust);
     let seenBell = bellPulse,
       seenReign = reignite,
       exposeAt = finale && !reduced ? performance.now() + 600 * speed : 0,
@@ -610,10 +640,26 @@ export default function Temple({
         // jewellery/glow shaders gain a slow golden shimmer.
         if (aura) {
           const s =
-            aura.scale.x + ((travel ? 1.35 : 1) - aura.scale.x) * 0.02;
+            aura.scale.x +
+            ((travel
+              ? 1.35
+              : 1 + (reduced ? 0 : Math.sin((t * Math.PI) / 4) * 0.016)) -
+              aura.scale.x) *
+              0.02;
           aura.scale.setScalar(s);
         }
       }
+      if (sacredRing)
+        sacredRing.rotation.z = reduced ? 0 : (t * Math.PI * 2) / 72;
+      sacredGlints.forEach((glint) => {
+        const phase = (t + glint.phase) % glint.period;
+        (glint.mesh.material as THREE.ShaderMaterial).uniforms.amount.value =
+          reduced
+            ? 0
+            : phase < 0.85
+              ? Math.sin((phase / 0.85) * Math.PI) * 0.65
+              : 0;
+      });
       if (!drag) {
         // Idle drift resumes shortly after the last gesture and stays inside
         // the manual-look clamp (±0.075). Primary cycle ≈7s so the sway is

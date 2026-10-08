@@ -3,6 +3,7 @@ import "./globals.css";
 import "./refinements.css";
 import "./deck-motion.css";
 import "./journey.css";
+import "./maa-atmosphere.css";
 
 export const metadata: Metadata = {
   title: "Chitraksh · A Night of Blessings",

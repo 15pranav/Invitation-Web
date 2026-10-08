@@ -1,0 +1,243 @@
+/* Lives INSIDE the background JourneyLayer: above its paint, below the
+   transparent temple canvas, deity, offerings and controls. No negative z-index. */
+.stage-atmosphere.stage-darbar {
+  background: radial-gradient(
+    ellipse at 49% 46%,
+    #4a0e17 0%,
+    #210408 57%,
+    #0d0204 100%
+  );
+}
+.maa-atmosphere {
+  position: absolute;
+  inset: 0;
+  isolation: isolate;
+  overflow: hidden;
+  pointer-events: none;
+}
+.maa-air-halo {
+  position: absolute;
+  inset: 12% 13% 13%;
+  background: radial-gradient(
+    ellipse at 50% 44%,
+    #ffb34738 0%,
+    #ce66282b 23%,
+    #b010304f 44%,
+    transparent 72%
+  );
+  opacity: 0.78;
+  animation: maa-halo-breath 8s ease-in-out infinite;
+}
+.maa-distant-recess {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      90deg,
+      #0d020485,
+      transparent 28%,
+      transparent 72%,
+      #0d020485
+    ),
+    radial-gradient(ellipse at 50% 13%, #16030666, transparent 50%);
+}
+.maa-mist {
+  position: absolute;
+  width: 65%;
+  height: 33%;
+  background:
+    radial-gradient(ellipse at 24% 55%, #d59c644a, transparent 38%),
+    radial-gradient(ellipse at 63% 70%, #a551594f, transparent 45%),
+    radial-gradient(ellipse at 48% 38%, #eac09627, transparent 36%);
+  opacity: 0.48;
+  transform: translate3d(0, 0, 0);
+  animation: maa-mist-drift 21.5s ease-in-out infinite alternate;
+}
+.maa-mist-far {
+  left: -20%;
+  top: 32%;
+  --mist-x: 8vw;
+  --mist-y: -2vh;
+}
+.maa-mist-near {
+  right: -20%;
+  top: 40%;
+  --mist-x: -9vw;
+  --mist-y: 2vh;
+  animation-duration: 15.5s;
+  animation-delay: -13s;
+  opacity: 0.58;
+}
+.maa-mist-low {
+  left: 16%;
+  bottom: 12%;
+  width: 68%;
+  height: 21%;
+  --mist-x: 4vw;
+  --mist-y: -1vh;
+  animation-duration: 24.5s;
+  animation-delay: -21s;
+  opacity: 0.36;
+}
+.maa-floor-reflection {
+  position: absolute;
+  left: 17%;
+  right: 17%;
+  bottom: 10%;
+  height: 19%;
+  opacity: 0.38;
+  background: radial-gradient(ellipse at 50% 35%, #e9ab4824, transparent 66%);
+  mask-image: radial-gradient(ellipse, #000 15%, transparent 72%);
+}
+.maa-floor-reflection i {
+  position: absolute;
+  inset: 20% -8%;
+  border-radius: 50%;
+  background: repeating-linear-gradient(
+    177deg,
+    transparent 0 10px,
+    #ffc57526 12px,
+    transparent 15px 24px
+  );
+  transform: scaleY(0.6);
+  animation: maa-floor-drift 11.5s ease-in-out infinite alternate;
+}
+.maa-floor-reflection i + i {
+  inset: 45% 5% 0;
+  opacity: 0.5;
+  animation-duration: 14.5s;
+  animation-delay: -12s;
+  animation-direction: alternate-reverse;
+}
+.maa-dust {
+  position: absolute;
+  inset: 0;
+}
+.maa-dust i {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: #f6d7a0;
+  opacity: 0.22;
+}
+.maa-dust i:nth-child(4n) {
+  animation: maa-dust-twinkle var(--dust-duration) ease-in-out var(--dust-delay)
+    infinite;
+  width: 3px;
+  height: 3px;
+  background: radial-gradient(
+    circle,
+    #fff0cb 10%,
+    #ffba6355 45%,
+    transparent 72%
+  );
+}
+.maa-dust i:nth-child(3n) {
+  animation: maa-dust-rise 17s ease-in-out var(--dust-delay) infinite;
+}
+@keyframes maa-halo-breath {
+  0%,
+  100% {
+    transform: scale(0.99);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.025);
+    opacity: 0.84;
+  }
+}
+@keyframes maa-mist-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(var(--mist-x), var(--mist-y), 0);
+  }
+}
+@keyframes maa-floor-drift {
+  from {
+    transform: translate3d(-2%, 0, 0) scaleY(0.6);
+    opacity: 0.5;
+  }
+  to {
+    transform: translate3d(3%, 2%, 0) scaleY(0.72);
+    opacity: 0.8;
+  }
+}
+@keyframes maa-dust-twinkle {
+  0%,
+  100% {
+    opacity: 0.12;
+  }
+  44% {
+    opacity: 0.18;
+  }
+  53% {
+    opacity: 0.55;
+  }
+  66% {
+    opacity: 0.17;
+  }
+}
+@keyframes maa-dust-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  20%,
+  65% {
+    opacity: 0.28;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-24px);
+  }
+}
+@media (max-width: 700px) {
+  .maa-air-halo {
+    inset: 19% -13% 16%;
+  }
+  .maa-mist {
+    width: 83%;
+    height: 30%;
+  }
+  .maa-mist-far {
+    left: -34%;
+    top: 36%;
+    opacity: 0.56;
+  }
+  .maa-mist-near {
+    right: -35%;
+    top: 43%;
+    opacity: 0.6;
+  }
+  .maa-mist-low {
+    left: 4%;
+    width: 92%;
+    height: 18%;
+    bottom: 16%;
+    opacity: 0.38;
+  }
+  .maa-floor-reflection {
+    left: 0;
+    right: 0;
+    bottom: 14%;
+    height: 17%;
+    opacity: 0.3;
+  }
+  .maa-dust i:nth-child(n + 13) {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .maa-atmosphere * {
+    animation: none !important;
+  }
+  .maa-dust i {
+    opacity: 0.22;
+  }
+  .maa-floor-reflection i {
+    opacity: 0.6;
+  }
+}

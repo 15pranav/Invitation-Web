@@ -32,6 +32,7 @@ import {
 import { EventContent, eventDate, isPlaceholder } from "@/lib/content";
 import Deck from "./deck";
 import DarbarPetals from "./darbar-petals";
+import MaaAtmosphere from "./maa-atmosphere";
 import MarigoldOffering from "./marigold-offering";
 import BalloonVeil from "./balloon-veil";
 import { resolveDeck } from "@/lib/deck-content";
@@ -439,7 +440,9 @@ export default function Experience({
                 className={"stage-atmosphere stage-" + id}
                 slot={scrollPair ? slot : undefined}
                 reduced={!!reduced}
-              />
+              >
+                {id === "darbar" && <MaaAtmosphere />}
+              </JourneyLayer>
             ))}
           </AnimatePresence>
           {preview && (
