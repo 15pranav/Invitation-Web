@@ -4,7 +4,11 @@ import type { MotionValue } from "motion/react";
 import * as THREE from "three";
 import { createBalloon, disposeBalloons } from "./balloon-model";
 
-import { BALLOON_TIMING, balloonPose } from "./balloon-motion";
+import {
+  BALLOON_TIMING,
+  balloonPose,
+  TRANSITION_BALLOON_COUNT,
+} from "./balloon-motion";
 export default function BalloonVeil({
   speed,
   progress,
@@ -49,13 +53,29 @@ export default function BalloonVeil({
     const light = new THREE.PointLight(0xffd8a3, 35, 600);
     light.position.set(-50, 80, 120);
     scene.add(light);
-    const balloons = Array.from({ length: 16 }, (_, i) => {
-      const b = createBalloon(i, true);
-      scene.add(b);
-      return b;
-    });
-    let width = 140;
+    // Palette templates share geometry and materials across the denser veil.
+    const templates = Array.from({ length: 7 }, (_, i) =>
+      createBalloon(i, true),
+    );
+    const balloons = Array.from(
+      { length: TRANSITION_BALLOON_COUNT },
+      (_, i) => {
+        const b = templates[i % templates.length].clone(true);
+        scene.add(b);
+        return b;
+      },
+    );
+    const poses = balloons.map(() => ({
+      x: 0,
+      y: 0,
+      z: 0,
+      scale: 1,
+      rotation: 0,
+    }));
+    let width = 140,
+      dirty = true;
     const resize = () => {
+      dirty = true;
       width = (100 * el.clientWidth) / el.clientHeight;
       camera.left = -width / 2;
       camera.right = width / 2;
@@ -67,14 +87,22 @@ export default function BalloonVeil({
     resize();
     let frame = 0,
       start = 0,
-      covered = false;
+      covered = false,
+      lastAge = -1;
+    renderer.compile(scene, camera);
     const tick = (now: number) => {
       if (!start) start = now;
       const age = progress
         ? progress.get() * BALLOON_TIMING.clear
         : (now - start) / speed;
+      if (document.hidden || (progress && age === lastAge && !dirty)) {
+        frame = requestAnimationFrame(tick);
+        return;
+      }
+      lastAge = age;
+      dirty = false;
       balloons.forEach((b, i) => {
-        const p = balloonPose(i, width, age);
+        const p = balloonPose(i, width, age, poses[i]);
         b.scale.setScalar(p.scale);
         b.position.set(p.x, p.y, p.z);
         b.rotation.z = p.rotation;
