@@ -1,9 +1,9 @@
 import type { CSSProperties } from "react";
 
 // Fixed seeds: quiet edge light, never a particle field across Maa's face.
-const stars = Array.from({ length: 18 }, (_, i) => ({
+const stars = Array.from({ length: 24 }, (_, i) => ({
   x: i % 2 ? 72 + ((i * 7) % 18) : 10 + ((i * 11) % 18),
-  y: 17 + ((i * 17) % 61),
+  y: i < 12 ? 9 + ((i * 7) % 23) : 33 + ((i * 17) % 43),
   duration: 5.7 + (i % 6) * 0.83,
 }));
 
@@ -17,23 +17,34 @@ function IncenseBank({ id }: { id: string }) {
       focusable="false"
     >
       <defs>
-        <radialGradient id={id} cx="45%" cy="38%" r="68%">
-          <stop offset="0" stopColor="#efbe88" stopOpacity=".8" />
-          <stop offset=".32" stopColor="#b77969" stopOpacity=".7" />
-          <stop offset=".7" stopColor="#713047" stopOpacity=".38" />
+        <radialGradient id={id}>
+          <stop offset="0" stopColor="#dbae85" stopOpacity=".62" />
+          <stop offset=".38" stopColor="#a96769" stopOpacity=".42" />
+          <stop offset=".72" stopColor="#713047" stopOpacity=".18" />
           <stop offset="1" stopColor="#481020" stopOpacity="0" />
         </radialGradient>
+        <radialGradient id={id + "-shade"}>
+          <stop stopColor="#320919" stopOpacity=".48" />
+          <stop offset="1" stopColor="#320919" stopOpacity="0" />
+        </radialGradient>
       </defs>
+      {/* Soft nested pockets have no shared silhouette or hard upper edge. */}
       <g fill={"url(#" + id + ")"}>
-        <path d="M-30 175C-8 146 12 169 29 130C44 92 67 115 81 84C101 45 130 84 154 63C177 42 198 77 206 98C231 82 255 111 256 138C295 115 320 157 344 163C372 143 408 165 430 199L430 260H-30Z" />
-        <path
-          opacity=".72"
-          d="M-20 206C12 170 48 209 69 167C92 128 129 152 143 136C164 111 189 148 214 143C244 119 263 176 293 160C327 142 354 190 419 173L430 260H-20Z"
-        />
-        <path
-          opacity=".55"
-          d="M-30 235C26 211 43 166 74 184C116 209 150 168 180 186C214 217 248 184 276 204C304 179 354 223 424 209L430 260H-30Z"
-        />
+        {[
+          [35, 118, 94, 72],
+          [108, 81, 77, 68],
+          [186, 123, 96, 79],
+          [266, 92, 78, 66],
+          [340, 140, 96, 73],
+          [78, 184, 114, 57],
+          [245, 190, 133, 57],
+        ].map(([cx, cy, rx, ry], i) => (
+          <ellipse key={i} cx={cx} cy={cy} rx={rx} ry={ry} />
+        ))}
+      </g>
+      <g fill={"url(#" + id + "-shade)"}>
+        <ellipse cx="123" cy="140" rx="73" ry="36" />
+        <ellipse cx="292" cy="163" rx="89" ry="42" />
       </g>
     </svg>
   );
@@ -52,11 +63,19 @@ function HangingLight({ side }: { side: string }) {
         </radialGradient>
       </defs>
       <path
+        className="maa-lamp-strand"
+        d="M30 3V132"
+        fill="none"
+        stroke="#e9b66f"
+        strokeWidth="5"
+        opacity=".16"
+      />
+      <path
         className="maa-lamp-chain"
         d="M30 0V133 M27 18L30 22L33 18L30 14Z M27 46L30 50L33 46L30 42Z M27 74L30 78L33 74L30 70Z M27 102L30 106L33 102L30 98Z"
         fill="none"
         stroke="currentColor"
-        strokeWidth=".8"
+        strokeWidth="1.2"
       />
       <ellipse
         className="maa-lamp-light"
@@ -114,6 +133,9 @@ export default function MaaAtmosphere() {
     <div className="maa-atmosphere" aria-hidden="true">
       <div className="maa-air-halo" />
       <div className="maa-distant-recess" />
+      <div className="maa-upper-haze">
+        <IncenseBank id="maa-cloud-upper" />
+      </div>
       <SacredFrame />
       <HangingLight side="left" />
       <HangingLight side="right" />

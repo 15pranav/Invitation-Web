@@ -18,13 +18,14 @@
 }
 .maa-air-halo {
   position: absolute;
-  inset: 12% 13% 13%;
+  inset: 8% 5% 10%;
   background: radial-gradient(
     ellipse at 50% 44%,
-    #ffd29370 0%,
-    #e6a24a58 26%,
-    #981b3a80 48%,
-    transparent 76%
+    #ffdfa380 0%,
+    #e6a24a70 23%,
+    #b6673f50 38%,
+    #981b3a80 57%,
+    transparent 84%
   );
   mask-image: radial-gradient(ellipse closest-side, #000 42%, transparent 100%);
   opacity: 0.78;
@@ -45,7 +46,7 @@
 }
 .maa-mist {
   position: absolute;
-  width: 65%;
+  width: min(52%, 660px);
   height: 33%;
   background:
     radial-gradient(
@@ -67,14 +68,14 @@
   animation: maa-mist-drift 21.5s ease-in-out infinite alternate;
 }
 .maa-mist-far {
-  left: -12%;
-  top: 44%;
+  left: -5%;
+  top: 38%;
   --mist-x: 8vw;
   --mist-y: -2vh;
 }
 .maa-mist-near {
-  right: -12%;
-  top: 48%;
+  right: -5%;
+  top: 43%;
   background-position: 20% 0;
   --mist-x: -9vw;
   --mist-y: 2vh;
@@ -228,9 +229,9 @@
 }
 .maa-hanging-light {
   position: absolute;
-  top: 23%;
-  width: clamp(28px, 4vw, 46px);
-  height: 29%;
+  top: 17%;
+  width: clamp(38px, 4vw, 54px);
+  height: 35%;
   color: #d8aa63;
   opacity: 0.83;
   overflow: visible;
@@ -242,12 +243,12 @@
 }
 .maa-hanging-right {
   right: max(6%, calc(50% - 320px));
-  top: 26%;
+  top: 20%;
   animation-duration: 11.5s;
   animation-delay: -8s;
 }
 .maa-lamp-chain {
-  opacity: 0.7;
+  opacity: 0.95;
 }
 .maa-lamp-light {
   animation: maa-lamp-glow 7s ease-in-out infinite alternate;
@@ -298,6 +299,108 @@
   }
 }
 
+.maa-upper-haze {
+  position: absolute;
+  inset: 3% -9% 51%;
+  opacity: 0.38;
+  mask-image: linear-gradient(
+    90deg,
+    #000,
+    transparent 37%,
+    transparent 63%,
+    #000
+  );
+  animation: maa-sky-drift 23s ease-in-out infinite alternate;
+}
+.maa-air-halo::after {
+  content: "";
+  position: absolute;
+  inset: 13% 19% 12%;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse,
+    transparent 46%,
+    #ffd58c42 52%,
+    #d2894355 54%,
+    transparent 60%,
+    #b3444128 68%,
+    transparent 75%
+  );
+}
+.maa-floor-reflection::before {
+  content: "";
+  position: absolute;
+  inset: 2% 5% 8%;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse 29% 4% at 50% 20%, #ffe2a5b3, transparent),
+    radial-gradient(ellipse 35% 3% at 47% 38%, #e7b66c80, transparent),
+    radial-gradient(ellipse 24% 3% at 54% 58%, #edb57566, transparent),
+    radial-gradient(ellipse 10% 48% at 24% 30%, #ffc87955, transparent),
+    radial-gradient(ellipse 10% 48% at 76% 30%, #ffc87955, transparent);
+  animation: maa-floor-drift 15.5s ease-in-out -6s infinite alternate;
+}
+.maa-lamp-strand {
+  animation: maa-frame-shimmer 11s ease-in-out infinite;
+}
+.maa-hanging-right .maa-lamp-strand {
+  animation-delay: -5s;
+}
+@keyframes maa-sky-drift {
+  from {
+    transform: translate3d(-2%, 0, 0);
+  }
+  to {
+    transform: translate3d(3%, 2%, 0);
+  }
+}
+/* Decorative airborne petals only; the offered rose has separate classes. */
+.darbar-petals i {
+  border-radius: 74% 26% 61% 39% / 68% 81% 19% 32%;
+  background: radial-gradient(
+    ellipse at 28% 20%,
+    #ed9296 0%,
+    #c94c5f 26%,
+    #8c162f 65%,
+    #450a20 100%
+  );
+  box-shadow: inset 1px 0 1px #ffd1b03b;
+  animation-name: maa-petal-drift;
+}
+.darbar-petals .petal-lane:nth-child(3n) i {
+  width: 7px;
+  height: 10px;
+}
+.darbar-petals .petal-lane:nth-child(5n) i {
+  width: 11px;
+  height: 15px;
+}
+@keyframes maa-petal-drift {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -3vh, 0) rotate(0deg) scaleX(0.85);
+  }
+  12% {
+    opacity: 0.72;
+  }
+  32% {
+    transform: translate3d(calc(var(--petal-drift) * 0.7), 30vh, 0)
+      rotate(calc(var(--petal-turn) * 0.3)) scaleX(0.55);
+  }
+  65% {
+    transform: translate3d(calc(var(--petal-drift) * 0.25), 66vh, 0)
+      rotate(calc(var(--petal-turn) * 0.65)) scaleX(1);
+  }
+  85% {
+    opacity: 0.48;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--petal-drift), 106vh, 0)
+      rotate(var(--petal-turn)) scaleX(0.65);
+  }
+}
+
 @media (max-width: 700px) {
   .maa-sacred-frame {
     width: 98%;
@@ -306,10 +409,10 @@
     opacity: 0.64;
   }
   .maa-hanging-left {
-    left: 7%;
+    left: 4%;
   }
   .maa-hanging-right {
-    right: 7%;
+    right: 4%;
   }
   .maa-mist-far,
   .maa-mist-near {
@@ -317,7 +420,7 @@
   }
 
   .maa-air-halo {
-    inset: 19% -13% 16%;
+    inset: 12% -21% 12%;
   }
   .maa-mist {
     width: 83%;
@@ -325,13 +428,13 @@
   }
   .maa-mist-far {
     left: -22%;
-    top: 48%;
-    opacity: 0.76;
+    top: 38%;
+    opacity: 0.82;
   }
   .maa-mist-near {
     right: -22%;
-    top: 51%;
-    opacity: 0.78;
+    top: 44%;
+    opacity: 0.84;
   }
   .maa-mist-low {
     left: 4%;
@@ -347,12 +450,14 @@
     height: 18%;
     opacity: 0.66;
   }
-  .maa-dust i:nth-child(n + 13) {
+  .maa-dust i:nth-child(n + 19) {
     display: none;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .maa-atmosphere * {
+  .maa-atmosphere *,
+  .maa-atmosphere *::before,
+  .maa-atmosphere *::after {
     animation: none !important;
   }
   .maa-dust i {
