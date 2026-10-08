@@ -139,7 +139,7 @@ export default function Temple({
           wave: { value: 10 },
         },
         vertexShader: vertex,
-        fragmentShader: `varying vec2 vUv; uniform float time,strength,reaction,wave; void main(){vec2 p=(vUv-.5)*2.;float r=length(p);float a=atan(p.y,p.x);float core=exp(-r*r*5.)*.6;float rays=${rays ? "pow(abs(sin(a*18.+sin(a*7.)*.3+time*.025)),18.)*exp(-r*2.)*.28*(1.+.48*pow(max(0.,sin(a*3.+time*.55)),18.))" : "0."};float fade=1.-smoothstep(.65,1.,r);float light=(core+rays+exp(-pow((r-wave*.45)*32.,2.))*.12*reaction)*fade*strength*(1.+sin(time*.35)*.035+reaction*.12);gl_FragColor=vec4(1.,.55,.19,light);}`,
+        fragmentShader: `varying vec2 vUv; uniform float time,strength,reaction,wave; void main(){vec2 p=(vUv-.5)*2.;float r=length(p);float a=atan(p.y,p.x);float core=exp(-r*r*5.)*.6;float rays=${rays ? "pow(abs(sin(a*18.+sin(a*7.)*.3+time*.025)),18.)*exp(-r*2.)*.28*(.55+1.65*pow(max(0.,sin(a*3.+time*.55)),10.))" : "0."};float fade=1.-smoothstep(.65,1.,r);float light=(core+rays+exp(-pow((r-wave*.45)*32.,2.))*.12*reaction)*fade*strength*(1.+sin(time*.35)*.035+reaction*.12);gl_FragColor=vec4(1.,.55,.19,light);}`,
       });
       shaders.push(material);
       return mesh(new THREE.PlaneGeometry(size, size), material, x, y, z);
@@ -330,7 +330,7 @@ export default function Temple({
           fragmentShader: `varying vec2 vUv; uniform float amount; void main(){vec2 p=(vUv-.5)*2.;float r=length(p);float core=exp(-r*r*22.);float crossLight=exp(-abs(p.x*p.y)*100.)*exp(-r*5.);gl_FragColor=vec4(1.,.84,.5,(core+crossLight*.3)*amount);}`,
         });
         sacredGlints.push({
-          mesh: mesh(new THREE.PlaneGeometry(0.16, 0.16), material, x, y, z),
+          mesh: mesh(new THREE.PlaneGeometry(0.24, 0.24), material, x, y, z),
           period,
           phase,
         });
@@ -340,7 +340,14 @@ export default function Temple({
           [2.3, -1.5, 5.7],
           [3.05, 0.8, 6.5],
         ]) {
-          const archmat = x > 3 ? dark : brass;
+          // A warmer satin surface catches the existing key light on the
+          // forward cylinders; rear brass and all geometry remain unchanged.
+          const archmat = x > 3 ? dark.clone() : brass;
+          if (x > 3) {
+            archmat.color.setHex(0x3b241b);
+            archmat.metalness = 0.48;
+            archmat.roughness = 0.32;
+          }
           const pillar = new THREE.Group();
           pillar.position.set(side * x, 0, z);
           scene.add(pillar);
@@ -657,7 +664,7 @@ export default function Temple({
           reduced
             ? 0
             : phase < 0.85
-              ? Math.sin((phase / 0.85) * Math.PI) * 0.65
+              ? Math.sin((phase / 0.85) * Math.PI) * 0.95
               : 0;
       });
       if (!drag) {
