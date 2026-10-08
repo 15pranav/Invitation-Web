@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 // altar along a soft bezier arc (WAAPI, transform/opacity only). Origin and
 // destination are read from live DOM rects so the path adapts to any viewport.
 
-const MAX_ACTIVE = 2;
-const LIFETIME = 3000;
+const MAX_ACTIVE = 5;
+const LIFETIME = 4200;
 
 type Offering = { id: number };
 
@@ -32,13 +32,13 @@ export default function MarigoldOffering({ cue = 0 }: { cue?: number }) {
   return (
     <div className="marigold-offering" aria-hidden="true">
       {active.map((o) => (
-        <MarigoldFlight key={o.id} />
+        <MarigoldFlight key={o.id} id={o.id} />
       ))}
     </div>
   );
 }
 
-function MarigoldFlight() {
+function MarigoldFlight({ id }: { id: number }) {
   const hostRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     const host = hostRef.current;
@@ -60,8 +60,17 @@ function MarigoldFlight() {
     const tr = temple?.getBoundingClientRect();
     const x0 = br ? br.left + br.width / 2 : vw * 0.5;
     const y0 = br ? br.top + br.height * 0.4 : vh * 0.82;
-    const x2 = tr ? tr.left + tr.width / 2 : vw * 0.5;
-    const y2 = tr ? tr.top + tr.height * 0.78 : vh * 0.62;
+    const landingOffsets = [
+      { x: 0, y: 0 },
+      { x: -24, y: 5 },
+      { x: 24, y: 6 },
+      { x: -12, y: -9 },
+      { x: 12, y: -8 },
+    ];
+    const landing = landingOffsets[(id - 1) % landingOffsets.length];
+
+    const x2 = (tr ? tr.left + tr.width / 2 : vw * 0.5) + landing.x;
+    const y2 = (tr ? tr.top + tr.height * 0.78 : vh * 0.62) + landing.y;
 
     // Control point: above the chord's midpoint → rises, curves, descends.
     const mx = (x0 + x2) / 2;
@@ -96,6 +105,8 @@ function MarigoldFlight() {
 
     // Sample the bezier into easing-weighted keyframes: rises promptly, lands
     // softly (ease-out over t).
+    setBase(flower, x0, y0);
+
     const steps = 26;
     const frames: Keyframe[] = [];
     for (let i = 0; i <= steps; i++) {
@@ -105,7 +116,7 @@ function MarigoldFlight() {
       const py = pointOn(t, y0, y1, y2) - y0;
       const scale = 0.85 + 0.18 * Math.sin(Math.PI * s) - 0.08 * s;
       const rot = -14 + 30 * s + 4 * Math.sin(s * 5);
-      const opacity = s < 0.12 ? s / 0.12 : s > 0.96 ? (1 - s) / 0.04 : 1;
+      const opacity = s < 0.12 ? s / 0.12 : 1;
       frames.push({
         opacity,
         transform: `translate(calc(-50% + ${px}px), calc(-50% + ${py}px)) rotate(${rot}deg) scale(${scale})`,
@@ -118,6 +129,32 @@ function MarigoldFlight() {
       easing: "linear",
       fill: "forwards",
     });
+
+    const finalFrame = frames[frames.length - 1];
+
+    const fade = flower.animate(
+      [
+        {
+          opacity: 1,
+          transform: finalFrame.transform,
+        },
+        {
+          opacity: 1,
+          transform: finalFrame.transform,
+          offset: 0.72,
+        },
+        {
+          opacity: 0,
+          transform: finalFrame.transform,
+        },
+      ],
+      {
+        duration: 3200,
+        delay: 1000,
+        easing: "ease-out",
+        fill: "forwards",
+      },
+    );
 
     // Landing: small warm glow + a few loose petals, no burst.
     if (glow) {
@@ -153,7 +190,10 @@ function MarigoldFlight() {
         },
       );
     });
-    return () => anim.cancel();
+    return () => {
+      anim.cancel();
+      fade.cancel();
+    };
   }, []);
 
   return (
