@@ -26,6 +26,7 @@
     #981b3a80 48%,
     transparent 76%
   );
+  mask-image: radial-gradient(ellipse closest-side, #000 42%, transparent 100%);
   opacity: 0.78;
   animation: maa-halo-breath 8s ease-in-out infinite;
 }
@@ -55,6 +56,12 @@
     ),
     radial-gradient(ellipse at 68% 69%, #b85f6c99 0%, transparent 57%),
     radial-gradient(ellipse at 30% 76%, #f5cf9670 0%, transparent 44%);
+  mask-image: radial-gradient(
+    ellipse closest-side at 50% 54%,
+    #000 28%,
+    #0009 68%,
+    transparent 100%
+  );
   opacity: 0.66;
   transform: translate3d(0, 0, 0);
   animation: maa-mist-drift 21.5s ease-in-out infinite alternate;
@@ -103,12 +110,11 @@
   position: absolute;
   inset: 20% -8%;
   border-radius: 50%;
-  background: repeating-linear-gradient(
-    177deg,
-    transparent 0 10px,
-    #ffd49380 12px,
-    transparent 15px 24px
-  );
+  background:
+    radial-gradient(ellipse 16% 8% at 27% 35%, #ffce8988, transparent 100%),
+    radial-gradient(ellipse 23% 6% at 61% 49%, #f5c98170, transparent 100%),
+    radial-gradient(ellipse 13% 5% at 78% 64%, #dfa25577, transparent 100%),
+    radial-gradient(ellipse 32% 7% at 48% 79%, #c8825555, transparent 100%);
   transform: scaleY(0.6);
   animation: maa-floor-drift 11.5s ease-in-out infinite alternate;
 }
@@ -204,13 +210,118 @@
     transform: translateY(-24px);
   }
 }
+
+/* Ornament and lamps stay within the same non-interactive background context. */
+.maa-sacred-frame {
+  position: absolute;
+  left: 50%;
+  top: 21%;
+  width: min(76vw, 680px);
+  height: 61%;
+  transform: translateX(-50%);
+  color: #bc8649;
+  opacity: 0.5;
+  mask-image: linear-gradient(transparent, #000 9%, #000 78%, transparent);
+}
+.maa-frame-catchlight {
+  animation: maa-frame-shimmer 13s ease-in-out infinite;
+}
+.maa-hanging-light {
+  position: absolute;
+  top: 23%;
+  width: clamp(28px, 4vw, 46px);
+  height: 29%;
+  color: #d8aa63;
+  opacity: 0.83;
+  overflow: visible;
+  transform-origin: 50% 0;
+  animation: maa-lamp-sway 9s ease-in-out infinite alternate;
+}
+.maa-hanging-left {
+  left: max(6%, calc(50% - 320px));
+}
+.maa-hanging-right {
+  right: max(6%, calc(50% - 320px));
+  top: 26%;
+  animation-duration: 11.5s;
+  animation-delay: -8s;
+}
+.maa-lamp-chain {
+  opacity: 0.7;
+}
+.maa-lamp-light {
+  animation: maa-lamp-glow 7s ease-in-out infinite alternate;
+}
+.maa-hanging-right .maa-lamp-light {
+  animation-duration: 9s;
+  animation-delay: -4s;
+}
+.maa-cloud-shapes {
+  position: absolute;
+  inset: -13% -8% -5%;
+  width: 116%;
+  height: 118%;
+}
+.maa-mist-near .maa-cloud-shapes {
+  transform: scaleX(-1);
+}
+.maa-mist-far,
+.maa-mist-near {
+  height: 39%;
+}
+@keyframes maa-frame-shimmer {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  48% {
+    opacity: 0.85;
+  }
+  72% {
+    opacity: 0.35;
+  }
+}
+@keyframes maa-lamp-sway {
+  from {
+    transform: rotate(-1.2deg);
+  }
+  to {
+    transform: rotate(1.2deg);
+  }
+}
+@keyframes maa-lamp-glow {
+  from {
+    opacity: 0.6;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @media (max-width: 700px) {
+  .maa-sacred-frame {
+    width: 98%;
+    top: 24%;
+    height: 57%;
+    opacity: 0.64;
+  }
+  .maa-hanging-left {
+    left: 7%;
+  }
+  .maa-hanging-right {
+    right: 7%;
+  }
+  .maa-mist-far,
+  .maa-mist-near {
+    height: 37%;
+  }
+
   .maa-air-halo {
     inset: 19% -13% 16%;
   }
   .maa-mist {
     width: 83%;
-    height: 30%;
+    height: 37%;
   }
   .maa-mist-far {
     left: -22%;

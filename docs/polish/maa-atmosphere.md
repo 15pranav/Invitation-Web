@@ -63,3 +63,21 @@ No additional DOM nodes, per-frame state, frame loops, animated filters, geometr
 Correction validation: typecheck and production build passed (large-bundle advisory remains). Existing scene-scroll-gestures, scene-progress, balloon-motion, scene-audio and deck-content suites passed. Diff check passed. Flower offering, bell, look-around and navigation implementations are untouched; runtime offering behavior is not newly verified.
 
 Browser inspection was retried and failed before initialization with windows sandbox helper_unknown_error / setup refresh had errors. No new mobile screenshot could be captured. Visible balance, flower interaction, reduced-motion rendering and hardware frame pacing remain unverified; compilation is not visual acceptance.
+
+## Layered sacred environment pass
+
+Continued from efdfd52, using the user's latest mobile screenshot as the baseline. This pass adds actual supporting environment shapes rather than another global color/light adjustment.
+
+New elements: two small suspended brass diya illustrations with fine chains and warm light pools; a double ornamental temple arch with lotus-like crest and diamond foot details; two reusable three-contour SVG cloud banks layered over the existing side haze. The right bank is mirrored. Mobile cloud planes are 37% high, with the existing low mist retained as a separate plane.
+
+Depth: dark recesses and air halo remain distant, arch and hanging lights sit behind the main composition, cloud banks occupy the lower side architecture, and reflected pools blend the altar base into the environment. Existing foreground petals, Maa/tiger/altar, title, buttons and their layout are untouched. Everything added remains inside the existing non-interactive background atmosphere context.
+
+The latest screenshot exposed rectangular haze boundaries. Explicit closest-side elliptical masks now feather halo and mist to zero at their box edges. Floor reflections use four localized elliptical pools instead of repeating straight stripes. No animated filters or blur were added.
+
+New motions: left/right suspended lights sway only +/-1.2 degrees over 18/23-second full return cycles. Lamp light pools vary opacity over 14/18-second full return cycles with offset phases. Ornamental line highlights shimmer over 13 seconds. Existing independent cloud drift, aura breathing, mandala rotation, dust rise and rare glints retain their previous timings. The reduced-motion rule disables all new descendant CSS animations while leaving the static environment visible.
+
+Performance: static inline SVG paths/gradients, existing reusable haze planes, transform/opacity animation only, no React animation state, additional WebGL renderer, asset downloads, or per-frame layout reads. Mobile dust remains 12 points.
+
+Validation: typecheck, production build, atmosphere component lint and diff check passed. Existing actual scroll-listener, scene-progress, scene-audio, balloon-motion and deck-content tests passed. Production build retains its large-chunk advisory. This pass changes only the atmosphere component/styles and this report. Offering, bell and scroll implementations were not edited. Scroll and bell-audio behavior are covered by existing tests; flower and bell pointer interactions were not verified in-browser.
+
+Browser preview was retried and failed at startup with Windows sandbox helper_unknown_error / setup refresh had errors. Therefore no new screenshot, visual acceptance, or measured mobile frame-pacing claim is made. Supplied images guided implementation; visual comparison of the new render remains pending.
