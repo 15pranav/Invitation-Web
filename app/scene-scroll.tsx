@@ -93,10 +93,11 @@ export default function SceneScroll({
       }
       gliding = true;
       const start = performance.now(),
-        duration = clamp(340 + (Math.abs(delta) / height) * 240, 340, 580);
+        duration = clamp(520 + (Math.abs(delta) / height) * 780, 520, 1300);
       const step = (now: number) => {
         const p = clamp((now - start) / duration, 0, 1);
-        el.scrollTop = from + delta * (1 - Math.pow(1 - p, 3));
+        const eased = 0.5 - Math.cos(Math.PI * p) / 2;
+        el.scrollTop = from + delta * eased;
         paint();
         if (p < 1) frame = requestAnimationFrame(step);
         else {

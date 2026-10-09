@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 
 // Fixed seeds: quiet edge light, never a particle field across Maa's face.
-const stars = Array.from({ length: 24 }, (_, i) => ({
+const stars = Array.from({ length: 28 }, (_, i) => ({
   x: i % 2 ? 72 + ((i * 7) % 18) : 10 + ((i * 11) % 18),
   y: i < 12 ? 9 + ((i * 7) % 23) : 33 + ((i * 17) % 43),
   duration: 5.7 + (i % 6) * 0.83,

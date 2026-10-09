@@ -286,7 +286,7 @@ export default function Temple({
           side: THREE.DoubleSide,
         }),
         0,
-        1.06,
+        0.96,
         -0.12,
       );
       for (const [radius, z] of [
@@ -616,6 +616,12 @@ export default function Temple({
     el.addEventListener("pointercancel", up);
     const resize = () => {
       const narrow = window.innerWidth <= 700;
+      // More legible mobile relief without unbounded high-DPR fill cost.
+      if (mode === "darbar") {
+        const cap = narrow ? (low ? 1.25 : 2) : (low ? 1 : 1.7);
+        const budget = narrow ? Math.sqrt(1_600_000 / Math.max(1, el.clientWidth * el.clientHeight)) : cap;
+        renderer.setPixelRatio(Math.min(devicePixelRatio, cap, budget));
+      }
       pillars.forEach(({ group, x, z, rear }) => {
         group.position.set(narrow ? Math.sign(x) * (rear ? 2.08 : 2.35) : x, 0, narrow ? (rear ? -1.8 : 0.45) : z);
         group.scale.set(narrow && rear ? 0.64 : 1, narrow && rear ? 0.92 : 1, narrow && rear ? 0.64 : 1);

@@ -22,7 +22,7 @@
   background: radial-gradient(
     ellipse at 50% 44%,
     #ffdfa380 0%,
-    #e6a24a70 23%,
+    #e6a24a88 23%,
     #b6673f50 38%,
     #981b3a80 57%,
     transparent 84%
@@ -302,7 +302,7 @@
 .maa-upper-haze {
   position: absolute;
   inset: 3% -9% 51%;
-  opacity: 0.38;
+  opacity: 0.48;
   mask-image: linear-gradient(
     90deg,
     #000,
@@ -450,7 +450,7 @@
     height: 18%;
     opacity: 0.66;
   }
-  .maa-dust i:nth-child(n + 19) {
+  .maa-dust i:nth-child(n + 21) {
     display: none;
   }
 }
@@ -465,5 +465,64 @@
   }
   .maa-floor-reflection i {
     opacity: 0.6;
+  }
+}
+
+/* Maa -> cards only. All values come from progress, never timed CSS keyframes.
+   The dark warm center covers the scene swap without a bright disc or flash. */
+.maa-cards-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 45;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: var(--maa-veil-opacity, 0);
+}
+.maa-cards-cover {
+  position: absolute;
+  inset: 0;
+  opacity: var(--maa-veil-cover, 0);
+  background: radial-gradient(
+    ellipse at 24% 52%,
+    #765043,
+    #4b2730 58%,
+    #21141e
+  );
+}
+.maa-cards-cloud {
+  position: absolute;
+  top: -15%;
+  bottom: -15%;
+  width: 88%;
+  background:
+    radial-gradient(ellipse at 46% 36%, #ba897788, transparent 58%),
+    radial-gradient(ellipse at 62% 64%, #a96e6888, transparent 58%),
+    radial-gradient(ellipse at 34% 78%, #844c5caa, transparent 58%),
+    radial-gradient(ellipse at 50% 50%, #572b39, #3b222c 62%, transparent 85%);
+  mask-image: radial-gradient(
+    ellipse closest-side,
+    #000 35%,
+    #000b 64%,
+    transparent 100%
+  );
+}
+.maa-cards-cloud-left {
+  left: -18%;
+  transform: translate3d(calc(var(--maa-veil-approach, 1) * -78%), 0, 0);
+}
+.maa-cards-cloud-right {
+  right: -18%;
+  transform: translate3d(calc(var(--maa-veil-approach, 1) * 78%), 0, 0)
+    scaleY(-1);
+}
+@media (max-width: 700px) {
+  .maa-upper-haze {
+    opacity: 0.55;
+    inset: 0 -13% 49%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .maa-cards-veil {
+    display: none;
   }
 }
