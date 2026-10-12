@@ -1250,7 +1250,8 @@ h1 {
 }
 .toast {
   position: absolute;
-  bottom: 112px;
+  top: calc(env(safe-area-inset-top) + 72px);
+  bottom: auto;
   left: 50%;
   transform: translateX(-50%);
   max-width: 90%;
@@ -1754,7 +1755,8 @@ textarea {
     font-size: 11px;
   }
   .toast {
-    bottom: 112px;
+    top: calc(env(safe-area-inset-top) + 64px);
+    bottom: auto;
     font-size: 11px;
     min-width: 240px;
   }

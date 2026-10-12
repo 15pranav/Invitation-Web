@@ -73,24 +73,31 @@ export class AudioDirector {
     this.filter.connect(this.duck);
   }
   private armGestureRetry() {
-    if (this.retryArmed || typeof document === "undefined") return;
-    this.retryArmed = true;
-    const fire = () => {
-      this.retryArmed = false;
-      const retry = this.retryPlay;
-      this.retryPlay = null;
-      retry?.();
-    };
-    document.addEventListener("pointerdown", fire, {
-      once: true,
-      passive: true,
-    });
-    document.addEventListener("touchend", fire, {
-      once: true,
-      passive: true,
-    });
-    document.addEventListener("keydown", fire, { once: true });
-  }
+  if (this.retryArmed || typeof document === "undefined") return;
+
+  this.retryArmed = true;
+
+  const fire = () => {
+    this.onError("");
+    this.retryArmed = false;
+
+    const retry = this.retryPlay;
+    if (!retry) return;
+
+    retry();
+
+    document.removeEventListener("click", fire);
+    document.removeEventListener("keydown", fire);
+  };
+
+  document.addEventListener("click", fire, {
+    once: true,
+  });
+
+  document.addEventListener("keydown", fire, {
+    once: true,
+  });
+}
   setEnabled(enabled: boolean) {
     if (this.disposed) return;
     this.enabled = enabled;
@@ -223,7 +230,7 @@ export class AudioDirector {
         // Not a fatal path: the scene has still changed. Retire the previous
         // soundtrack and bring this voice in as soon as a gesture allows it.
         if (token === this.generation && this.enabled && !this.disposed) {
-          this.onError("Tap anywhere to continue the music.");
+          this.onError("Tap once to continue the music 🎵");
           this.retryPlay = () => {
             if (this.disposed || !this.enabled || !this.context) return;
             void this.context.resume().catch(() => {});
